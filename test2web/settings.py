@@ -27,7 +27,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-TEMPLATE_DIRS = (os.path.join(BASE_DIR, 'test2web/html'),)
+TEMPLATE_DIRS = (os.path.join(BASE_DIR, 'test2web', 'html'),)
 
 
 # Application definition
@@ -123,7 +123,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/dev/howto/static-files/
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATIC_ROOT = os.path.join(BASE_DIR, 'test2web', 'static')
 # STATICFILES_DIRS = (
 #     ('styles',os.path.join(STATIC_ROOT,'styles').replace('\\','/') ),
 #     ('scripts',os.path.join(STATIC_ROOT,'scripts').replace('\\','/') ),
