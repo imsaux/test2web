@@ -19,6 +19,6 @@ from django.conf.urls.static import static
 from test2web.page import *
 
 urlpatterns = [
-    url(r'^main/$', main_page, name='main_page'),
-    url(r'^data/$', data_handle, name='data_handle'),
+    url(r'^warning/$', warning_page, name='warning'),
+    url(r'^stat/$', stat_page, name='stat'),
 ] + static(settings.STATIC_URL, document_root = settings.STATIC_ROOT)
