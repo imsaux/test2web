@@ -20,4 +20,5 @@ from test2web.page import *
 
 urlpatterns = [
     url(r'^main/$', main_page, name='main_page'),
+    url(r'^data/$', data_handle, name='data_handle'),
 ] + static(settings.STATIC_URL, document_root = settings.STATIC_ROOT)
