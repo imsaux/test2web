@@ -11,3 +11,5 @@ def stat_page(request):
 def dict_page(request):
     return render_to_response('dict.html')
 
+def config_page(request):
+    return render_to_response('config.html')
