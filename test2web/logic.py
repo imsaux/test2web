@@ -2,6 +2,7 @@ import os
 import xlrd
 import configparser
 import logging
+from PIL import Image, ImageDraw
 
 logging.basicConfig(level=logging.DEBUG,
                 format='%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s',
@@ -59,7 +60,6 @@ class ini_handle():
             return _user, _ip, _port, _pwd, _db_name
         except Exception as e:
             to_log('error', repr(e))
-
 
 def test_ini():
     ini = ini_handle()
