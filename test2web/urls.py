@@ -22,5 +22,6 @@ urlpatterns = [
     url(r'^warning/$', warning_page, name='warning'),
     url(r'^stat/$', stat_page, name='stat'),
     url(r'^dict/$', dict_page, name='dict'),
-    url(r'^config/$', config_page, name='config'),
+    # url(r'^init/$', init, name='init'),
+    url(r'^add_warning/$', add_warning, name='add_warning'),
 ] + static(settings.STATIC_URL, document_root = settings.STATIC_ROOT)

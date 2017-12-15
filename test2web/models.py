@@ -1,12 +1,31 @@
 from django.db import models
 
+
 class Dict(models.Model):
-    id = models.AutoField(primary_key=True)
     pid = models.IntegerField()
     name = models.CharField(max_length=100)
 
+class Reason(models.Model):
+    pid = models.IntegerField()
+    name = models.CharField(max_length=255)
+
+class Algo(models.Model):
+    pid = models.IntegerField()
+    name = models.CharField(max_length=255)
+
+class Site(models.Model):
+    name = models.CharField(max_length=255)
+
+class Kind(models.Model):
+    name = models.CharField(max_length=255)
+
 class Warning(models.Model):
-    pic = models.BinaryField()
-    pub_date = models.DateField()
-    id = models.AutoField(primary_key=True)
-    reason = models.ManyToManyField(Dict)
+    date = models.DateField()
+    site = models.ForeignKey(Site, on_delete=models.CASCADE)
+    side = models.CharField(max_length=255)
+    line = models.CharField(max_length=100)
+    kind = models.ForeignKey(Kind, on_delete=models.CASCADE)
+    algo = models.ManyToManyField(Algo)
+    reason = models.ManyToManyField(Reason, blank=True)
+    pic = models.FileField(upload_to='upload/', blank=True)
+

@@ -1,237 +1,123 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-
-    <!-- start: Meta -->
-    <meta charset="utf-8">
-    <title>站点报警信息监控系统</title>
-    <meta name="description" content="Bootstrap Metro Dashboard">
-    <meta name="author" content="Dennis Ji">
-    <meta name="keyword"
-          content="Metro, Metro UI, Dashboard, Bootstrap, Admin, Template, Theme, Responsive, Fluid, Retina">
-    <!-- end: Meta -->
-
-    <!-- start: Mobile Specific -->
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!-- end: Mobile Specific -->
-    {% load staticfiles %}
-    <!-- start: CSS -->
-    <link id="bootstrap-style" href="{% static "css/bootstrap.min.css" %}" rel="stylesheet">
-    <link href="{% static "css/bootstrap-responsive.min.css" %}" rel="stylesheet">
-    <link id="base-style" href="{% static "css/style.css" %}" rel="stylesheet">
-    <link id="base-style-responsive" href="{% static "css/style-responsive.css" %}" rel="stylesheet">
-
-    {#	<link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800&subset=latin,cyrillic-ext,latin-ext' rel='stylesheet' type='text/css'>#}
-    <!-- end: CSS -->
-
-
-    <!-- The HTML5 shim, for IE6-8 support of HTML5 elements -->
-    <!--[if lt IE 9]>
-{#	  	<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>#}
-		<link id="ie-style" href="{% static "css/ie.css" %}" rel="stylesheet">
-	<![endif]-->
-
-    <!--[if IE 9]>
-		<link id="ie9Avg. Visit Duration:style" href="{% static "css/ie9.css" %}" rel="stylesheet">
-	<![endif]-->
-
-    <!-- start: Favicon -->
-    <link rel="shortcut icon" href="{% static "img1/favicon.ico" %}">
-    <!-- end: Favicon -->
-
-
-</head>
-<body>
-<div class="navbar">
-    <div class="navbar-inner">
-        <div class="container-fluid">
-            <a class="btn btn-navbar" data-toggle="collapse"
-               data-target=".top-nav.nav-collapse,.sidebar-nav.nav-collapse">
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-            </a>
-            <a class="brand" href="index.html"><span>站点报警信息监控系统</span></a>
-        </div>
-    </div>
-</div>
-
-
-<div class="container-fluid-full">
-    <div class="row-fluid">
-
-        <!-- start: Main Menu -->
-        <div id="sidebar-left" class="span2">
-            <div class="nav-collapse sidebar-nav">
-                <ul class="nav nav-tabs nav-stacked main-menu">
-                    <li><a href="/warning"><i class="icon-envelope"></i><span
-                            class="hidden-tablet"> 报警信息</span></a></li>
-                    <li><a href="/stat"><i class="icon-tasks"></i><span class="hidden-tablet"> 统计分析</span></a>
-                    </li>
-                    <li><a href="/dict"><i class="icon-edit"></i><span class="hidden-tablet"> 字典管理</span></a>
-                    </li>
-                    <li><a href="/config"><i class="icon-list-alt"></i><span
-                            class="hidden-tablet"> 用户权限</span></a>
-                    </li>
-                </ul>
+<div class="row-fluid sortable">
+    <div class="box span12">
+        <div class="box-header" data-original-title>
+            <h2><i class="halflings-icon white edit"></i><span class="break"></span>添加报警</h2>
+            <div class="box-icon">
+                <a href="#" class="btn-setting"><i class="halflings-icon white wrench"></i></a>
+                <a href="#" class="btn-minimize"><i class="halflings-icon white chevron-up"></i></a>
+                <a href="#" class="btn-close"><i class="halflings-icon white remove"></i></a>
             </div>
         </div>
-        <!-- end: Main Menu -->
-        <div id="content" class="span10">
-            <div class="row-fluid sortable">
-                <div class="box span12">
-                    <div class="box-header" data-original-title>
-                        <h2><i class="halflings-icon white edit"></i><span class="break"></span>添加报警</h2>
-                        <div class="box-icon">
-                            <a href="#" class="btn-setting"><i class="halflings-icon white wrench"></i></a>
-                            <a href="#" class="btn-minimize"><i class="halflings-icon white chevron-up"></i></a>
-                            <a href="#" class="btn-close"><i class="halflings-icon white remove"></i></a>
+        <div class="box-content">
+            <form class="form-horizontal" enctype="multipart/form-data" action="/add_warning/" method="post">
+                <fieldset>
+                    <div class="control-group">
+                        <label class="control-label" for="date01">日期</label>
+                        <div class="controls">
+                            <input type="text" class="input-xlarge datepicker" id="date01" value="" name="r_date">
                         </div>
                     </div>
-                    <div class="box-content">
-                        <form class="form-horizontal">
-                            <fieldset>
-                                <div class="control-group">
-                                    <label class="control-label" for="date01">日期</label>
-                                    <div class="controls">
-                                        <input type="text" class="input-xlarge datepicker" id="date01" value="02/16/17">
-                                    </div>
-                                </div>
 
-                                <div class="control-group">
-                                    <label class="control-label" for="selectError">线路</label>
-                                    <div class="controls">
-                                        <select id="selectError" data-rel="chosen">
-                                            <option>上行</option>
-                                            <option>下行</option>
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <div class="control-group">
-                                    <label class="control-label" for="selectErrorSide">站点</label>
-                                    <div class="controls">
-                                        <select id="selectErrorSide" data-rel="chosen">
-                                            <option>杨柳青</option>
-                                            <option>唐官屯</option>
-                                            <option>静海</option>
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <div class="control-group">
-                                    <label class="control-label" for="selectError2">报警类别</label>
-                                    <div class="controls">
-                                        <select id="selectError2" data-rel="chosen">
-                                            <option>真实</option>
-                                            <option>误报</option>
-                                            <option>漏报</option>
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <div class="control-group">
-                                    <label class="control-label" for="selectErrorM">误报、漏报原因</label>
-                                    <div class="controls">
-                                        <select id="selectErrorM" multiple data-rel="chosen">
-                                            <option>图像质量</option>
-                                            <option selected>截图不准</option>
-                                            <option>TOEC服务</option>
-                                            <option>算法本身</option>
-                                            <option>其他</option>
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <div class="control-group">
-                                    <label class="control-label" for="fileInput">图片上传</label>
-                                    <div class="controls">
-                                        <input class="input-file uniform_on" id="fileInput" type="file">
-                                    </div>
-                                </div>
-
-
-                                <div class="form-actions">
-                                    <button type="submit" class="btn btn-primary">保存</button>
-                                    <button type="reset" class="btn">取消</button>
-                                </div>
-                            </fieldset>
-                        </form>
+                    <div class="control-group">
+                        <label class="control-label" for="selectErrorSite">站点</label>
+                        <div class="controls">
+                            <select id="selectErrorSite" data-rel="chosen" name="r_site">
+                                <option>杨柳青</option>
+                                <option>唐官屯</option>
+                                <option>静海</option>
+                            </select>
+                        </div>
                     </div>
-                </div>
-                <!-- content -->
-            </div>
+
+                    <div class="control-group">
+                        <label class="control-label" for="selectError">线路</label>
+                        <div class="controls">
+                            <select id="selectError" data-rel="chosen" name="r_line">
+                                <option>上行</option>
+                                <option>下行</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label" for="selectErrorKind">车种</label>
+                        <div class="controls">
+                            <select id="selectErrorKind" data-rel="chosen" name="r_kind">
+                                <option>C（敞车）</option>
+                                <option>P（篷车）</option>
+                                <option>G（罐车）</option>
+                                <option>N、X（平车）</option>
+                                <option>W（毒品车）</option>
+                                <option>B（冷藏车）</option>
+                            </select>
+                        </div>
+                    </div>
+
+
+                    <div class="control-group">
+                        <label class="control-label" for="selectErrorSide">位置</label>
+                        <div class="controls">
+                            <select id="selectErrorSide" data-rel="chosen" name="r_side">
+                                <option>左侧</option>
+                                <option>右侧</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label" for="selectWarningCata">报警分类</label>
+                        <div class="controls">
+                            <select id="selectWarningCata" data-rel="chosen" name="r_type">
+                                <option>真实</option>
+                                <option>误报</option>
+                                <option>漏报</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label" for="selectAlgoType">算法类型</label>
+                        <div class="controls">
+                            <select id="selectAlgoType" data-rel="chosen" name="r_algo_type">
+                                {% if algo_type %}
+                                    {% for x in algo_type %}
+                                        <option>{{ x }}</option>
+                                    {% endfor %}
+                                {% else %}
+                                    <option>无</option>
+                                {% endif %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label" for="selectErrorM">误报、漏报原因</label>
+                        <div class="controls">
+                            <select id="selectReasons" multiple name="r_reason">
+                                <option value="图像质量">图像质量</option>
+                                <option value="截图不准">截图不准</option>
+                                <option value="TOEC服务">TOEC服务</option>
+                                <option value="算法本身">算法本身</option>
+                                <option value="其他">其他</option>
+                            </select>
+                            <p>*按住CTRL多选</p>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label" for="fileInput">图片上传</label>
+                        <div class="controls">
+                            <input class="input-file uniform_on" id="fileInput" type="file" name="r_pic">
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">保存</button>
+                        <button type="reset" class="btn">取消</button>
+                    </div>
+                </fieldset>
+            </form>
         </div>
     </div>
+    <!-- content -->
 </div>
-<div class="clearfix"></div>
-
-<footer>
-
-    <p>
-        <span style="text-align:left;float:left">&copy; 2017 </span>
-
-    </p>
-
-</footer>
-
-<!-- start: JavaScript-->
-
-<script src="{% static "js/jquery-1.9.1.min.js" %}"></script>
-<script src="{% static "js/jquery-migrate-1.0.0.min.js" %}"></script>
-
-<script src="{% static "js/jquery-ui-1.10.0.custom.min.js" %}"></script>
-
-<script src="{% static "js/jquery.ui.touch-punch.js" %}"></script>
-
-<script src="{% static "js/modernizr.js" %}"></script>
-
-<script src="{% static "js/bootstrap.min.js" %}"></script>
-
-<script src="{% static "js/jquery.cookie.js" %}"></script>
-
-<script src='{% static "js/fullcalendar.min.js" %}'></script>
-
-<script src='{% static "js/jquery.dataTables.min.js" %}'></script>
-<script src="{% static "js/excanvas.js" %}"></script>
-<script src="{% static "js/jquery.flot.js" %}"></script>
-<script src="{% static "js/jquery.flot.pie.js" %}"></script>
-<script src="{% static "js/jquery.flot.stack.js" %}"></script>
-<script src="{% static "js/jquery.flot.resize.min.js" %}"></script>
-
-<script src="{% static "js/jquery.chosen.min.js" %}"></script>
-
-<script src="{% static "js/jquery.uniform.min.js" %}"></script>
-
-<script src="{% static "js/jquery.cleditor.min.js" %}"></script>
-
-<script src="{% static "js/jquery.noty.js" %}"></script>
-
-<script src="{% static "js/jquery.elfinder.min.js" %}"></script>
-
-<script src="{% static "js/jquery.raty.min.js" %}"></script>
-
-<script src="{% static "js/jquery.iphone.toggle.js" %}"></script>
-
-<script src="{% static "js/jquery.uploadify-3.1.min.js" %}"></script>
-
-<script src="{% static "js/jquery.gritter.min.js" %}"></script>
-
-<script src="{% static "js/jquery.imagesloaded.js" %}"></script>
-
-<script src="{% static "js/jquery.masonry.min.js" %}"></script>
-
-<script src="{% static "js/jquery.knob.modified.js" %}"></script>
-
-<script src="{% static "js/jquery.sparkline.min.js" %}"></script>
-
-<script src="{% static "js/counter.js" %}"></script>
-
-<script src="{% static "js/retina.js" %}"></script>
-
-<script src="{% static "js/custom.js" %}"></script>
-<script src="{% static "js/jquery.tagsinput.min.js" %}"></script>
-<!-- end: JavaScript-->
-
-</body>
-</html>

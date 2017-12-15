@@ -7,7 +7,7 @@ from PIL import Image, ImageDraw
 logging.basicConfig(level=logging.DEBUG,
                 format='%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s',
                 datefmt='%a, %d %b %Y %H:%M:%S',
-                filename='./static/config/stat.log',
+                filename='stat.log',
                 filemode='w')
 
 def to_log(mode, message):
@@ -17,6 +17,12 @@ def to_log(mode, message):
         logging.debug(message)
     if mode == 'info':
         logging.info(message)
+
+
+# [4, 图像算法（线阵左右侧图像）, 货车车门开启, 4, 3, 1, 1, 4, 3, 1, 1]
+# [0, 客车车门开启, 4, 3, 1, 1, 4, 3, 1, 1]
+# [0, 悬挂异物, 4, 3, 1, 1, 4, 3, 1, 1]
+
 
 class ini_handle():
     def __init__(self, f=None):
