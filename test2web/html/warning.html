@@ -14,7 +14,7 @@
                     <div class="control-group">
                         <label class="control-label" for="date01">日期</label>
                         <div class="controls">
-                            <input type="text" class="input-xlarge datepicker" id="date01" value="" name="r_date">
+                            <input type="text" class="input-xlarge datepicker" id="date01" value="{{ date_now }}" name="r_date">
                         </div>
                     </div>
 
@@ -43,12 +43,13 @@
                         <label class="control-label" for="selectErrorKind">车种</label>
                         <div class="controls">
                             <select id="selectErrorKind" data-rel="chosen" name="r_kind">
-                                <option>C（敞车）</option>
-                                <option>P（篷车）</option>
-                                <option>G（罐车）</option>
-                                <option>N、X（平车）</option>
-                                <option>W（毒品车）</option>
-                                <option>B（冷藏车）</option>
+                                {% if train_kind %}
+                                    {% for kind in train_kind %}
+                                        <option>{{ kind }}</option>
+                                    {% endfor %}
+                                {% else %}
+                                    <option>无</option>
+                                {% endif %}
                             </select>
                         </div>
                     </div>
@@ -94,11 +95,13 @@
                         <label class="control-label" for="selectErrorM">误报、漏报原因</label>
                         <div class="controls">
                             <select id="selectReasons" multiple name="r_reason">
-                                <option value="图像质量">图像质量</option>
-                                <option value="截图不准">截图不准</option>
-                                <option value="TOEC服务">TOEC服务</option>
-                                <option value="算法本身">算法本身</option>
-                                <option value="其他">其他</option>
+                                {% if error_reason %}
+                                    {% for reason in error_reason %}
+                                        <option>{{ reason }}</option>
+                                    {% endfor %}
+                                {% else %}
+                                    <option>无</option>
+                                {% endif %}
                             </select>
                             <p>*按住CTRL多选</p>
                         </div>

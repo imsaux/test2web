@@ -7,22 +7,70 @@ from . import models
 import datetime
 
 
+def _redirect(page, params):
+    _page = page + '.html'
+    return render_to_response(
+        _page,
+        params
+    ).content.decode('utf8')
 
 def warning_page(request):
-    _set = [x.name for x in models.Algo.objects.exclude(pid=0)]
-    _js = r"""<script src="/static/js/my/warning.js"></script>"""
-    k = test(request).content.decode('utf8')
+    _algo = [x.name for x in models.Algo.objects.exclude(pid=0)]
+    _kind = [x.name for x in models.Kind.objects.all()]
+    _reason = [x.name for x in models.Reason.objects.all()]
+    _date = datetime.datetime.now().strftime('%m/%d/%Y')
     return render_to_response(
         'base.html',
         {
-            'box_content': k,
-            'body_script': _js,
-            'algo_type':_set,
+            'box_content': _redirect(
+                'warning',
+                {
+                    'algo_type': _algo,
+                    'train_kind': _kind,
+                    'error_reason': _reason,
+                    'date_now': _date,
+                }
+            ),
         }
     )
 
 def stat_page(request):
-    c = get_template('stat.html')
+    data = list()
+    all_warning = models.Warning.objects.all()
+    k = set([y[0]['id'] for y in [x.algo.all().values('id') for x in all_warning]])
+    _current_parent_algo = None
+    for _a in k:
+        _this = list()
+        this_algo = all_warning.filter(algo=_a)
+        this_algo_obj = models.Algo.objects.get(id=_a)
+        this_algo_obj_name = this_algo_obj.name
+        this_algo_parent_obj = models.Algo.objects.get(id=this_algo_obj.pid)
+        this_algo_parent_obj_name = this_algo_parent_obj.name
+        if _current_parent_algo is None or _current_parent_algo != this_algo_parent_obj_name:
+            _this.append(this_algo_parent_obj_name)
+        else:
+            _this.append(None)
+        _this.append(this_algo_obj_name)
+        line_1_real = len(this_algo.filter(line='上行', warning_type='真实'))
+        line_2_real = len(this_algo.filter(line='下行', warning_type='真实'))
+        line_1_err = len(this_algo.filter(line='上行', warning_type='误报'))
+        line_2_err = len(this_algo.filter(line='下行', warning_type='误报'))
+        line_1_miss = len(this_algo.filter(line='上行', warning_type='漏报'))
+        line_2_miss = len(this_algo.filter(line='下行', warning_type='漏报'))
+        line_1_total = line_1_real + line_1_err
+        line_2_total = line_2_real + line_2_err
+        _this.append(line_1_total)
+        _this.append(line_1_real)
+        _this.append(line_1_err)
+        _this.append(line_1_miss)
+        _this.append(line_2_total)
+        _this.append(line_2_real)
+        _this.append(line_2_err)
+        _this.append(line_2_miss)
+        data.append(_this)
+
+
+
     _js = r"""<script src="/static/js/my/stat.js"></script>"""
     _css = r"""<link href="/static/css/my/dict.css" rel="stylesheet">"""
     _rMenu = r"""
@@ -70,6 +118,7 @@ def test(request):
             'algo_type':_set,
         }
     )
+
 def add_warning(request):
     # if request.Method == 'POST':
     _date = request.POST['r_date']
@@ -80,6 +129,7 @@ def add_warning(request):
     _line = request.POST['r_line']
     _pic = request.FILES['r_pic']
     _type = request.POST['r_type']
+    _algo = models.Algo.objects.get(name=request.POST['r_algo_type'])
     try:
         _add = models.Warning(
             date=_to_date,
@@ -87,26 +137,57 @@ def add_warning(request):
             side=_side,
             line=_line,
             kind=_kind,
+            warning_type=_type,
             pic=_pic,
         )
         _add.save()
+        _add.algo.add(_algo)
         if _type != '真实':
             _reasons = [models.Reason.objects.get(name=x) for x in request.POST.getlist('r_reason')]
             for r in _reasons:
                 _add.reason.add(r)
+
     except Exception as e:
         logic.to_log('error', repr(e))
     finally:
-        c = get_template('warning.html')
-        _js = r"""<script src="/static/js/my/warning.js"></script>"""
-        return render_to_response(
-            'base.html',
-            {
-                'box_content': c.template.source,
-                'body_script': _js,
-            }
-        )
+        return warning_page(request)
+
 def init(request):
+
+
+
+
+    _r1 = models.Reason(pid=0, name='图像质量')
+    _r2 = models.Reason(pid=0, name='截图不准')
+    _r3 = models.Reason(pid=0, name='TOEC服务')
+    _r4 = models.Reason(pid=0, name='算法本身')
+    _r5 = models.Reason(pid=0, name='其他')
+    _r1.save()
+    _r2.save()
+    _r3.save()
+    _r4.save()
+    _r5.save()
+
+    _site1 = models.Site(name='杨柳青')
+    _site2 = models.Site(name='静海')
+    _site3 = models.Site(name='唐官屯')
+    _site1.save()
+    _site2.save()
+    _site3.save()
+
+    _kind1 = models.Kind(name='C（敞车）')
+    _kind2 = models.Kind(name='P（篷车）')
+    _kind3 = models.Kind(name='G（罐车）')
+    _kind4 = models.Kind(name='N、X（平车）')
+    _kind5 = models.Kind(name='W（毒品车）')
+    _kind6 = models.Kind(name='B（冷藏车）')
+    _kind1.save()
+    _kind2.save()
+    _kind3.save()
+    _kind4.save()
+    _kind5.save()
+    _kind6.save()
+
     _algo1 = models.Algo(pid=0, name='图像算法（线阵左右侧图像）')
     _algo1.save()
     _algo11 = models.Algo(pid=_algo1.id, name='货车车门开启')

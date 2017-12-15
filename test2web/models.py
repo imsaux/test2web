@@ -25,6 +25,7 @@ class Warning(models.Model):
     side = models.CharField(max_length=255)
     line = models.CharField(max_length=100)
     kind = models.ForeignKey(Kind, on_delete=models.CASCADE)
+    warning_type = models.CharField(max_length=255)
     algo = models.ManyToManyField(Algo)
     reason = models.ManyToManyField(Reason, blank=True)
     pic = models.FileField(upload_to='upload/', blank=True)

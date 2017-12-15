@@ -24,4 +24,5 @@ urlpatterns = [
     url(r'^dict/$', dict_page, name='dict'),
     # url(r'^init/$', init, name='init'),
     url(r'^add_warning/$', add_warning, name='add_warning'),
+    url(r'^$', stat_page, name='stat'),
 ] + static(settings.STATIC_URL, document_root = settings.STATIC_ROOT)
