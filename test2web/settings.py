@@ -128,3 +128,5 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'test2web', 'static')
 #     ('img',os.path.join(STATIC_ROOT,'imges').replace('\\','/') ),
 #     ('img_demo',os.path.join(STATIC_ROOT,'imges', 'demo').replace('\\','/') ),
 # )
+UPLOAD_URL = '/upload/'
+UPLOAD_ROOT = os.path.join(BASE_DIR, 'upload').replace("\\", "/")

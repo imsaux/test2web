@@ -14,7 +14,8 @@
                     <div class="control-group">
                         <label class="control-label" for="date01">日期</label>
                         <div class="controls">
-                            <input type="text" class="input-xlarge datepicker" id="date01" value="{{ date_now }}" name="r_date">
+                            <input type="text" class="input-xlarge datepicker" id="date01" value="{{ date_now }}"
+                                   name="r_date">
                         </div>
                     </div>
 
@@ -22,9 +23,9 @@
                         <label class="control-label" for="selectErrorSite">站点</label>
                         <div class="controls">
                             <select id="selectErrorSite" data-rel="chosen" name="r_site">
-                                <option>杨柳青</option>
-                                <option>唐官屯</option>
-                                <option>静海</option>
+                                {% for site in all_site %}
+                                    <option>{{ site }}</option>
+                                {% endfor %}
                             </select>
                         </div>
                     </div>

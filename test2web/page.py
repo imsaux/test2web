@@ -17,6 +17,7 @@ def _redirect(page, params):
 def warning_page(request):
     _algo = [x.name for x in models.Algo.objects.exclude(pid=0)]
     _kind = [x.name for x in models.Kind.objects.all()]
+    _site = [x.name for x in models.Site.objects.all()]
     _reason = [x.name for x in models.Reason.objects.all()]
     _date = datetime.datetime.now().strftime('%m/%d/%Y')
     return render_to_response(
@@ -29,48 +30,62 @@ def warning_page(request):
                     'train_kind': _kind,
                     'error_reason': _reason,
                     'date_now': _date,
+                    'all_site': _site,
                 }
             ),
         }
     )
 
 def stat_page(request):
+    return get_data()
+
+def get_data(_site='杨柳青', _date=None):
     data = list()
-    all_warning = models.Warning.objects.all()
-    k = set([y[0]['id'] for y in [x.algo.all().values('id') for x in all_warning]])
+    if _date is None:
+        _date = datetime.datetime.now()
+    all_warning = models.Warning.objects.filter(site=models.Site.objects.get(name=_site), date__year=_date.year, date__month=_date.month, date__day=_date.day).order_by('algo__pid')
+    P_algo = sorted(set([y[0]['pid'] for y in [x.algo.all().values('pid') for x in all_warning]]))
     _current_parent_algo = None
-    for _a in k:
-        _this = list()
-        this_algo = all_warning.filter(algo=_a)
-        this_algo_obj = models.Algo.objects.get(id=_a)
-        this_algo_obj_name = this_algo_obj.name
-        this_algo_parent_obj = models.Algo.objects.get(id=this_algo_obj.pid)
-        this_algo_parent_obj_name = this_algo_parent_obj.name
-        if _current_parent_algo is None or _current_parent_algo != this_algo_parent_obj_name:
-            _this.append(this_algo_parent_obj_name)
-        else:
-            _this.append(None)
-        _this.append(this_algo_obj_name)
-        line_1_real = len(this_algo.filter(line='上行', warning_type='真实'))
-        line_2_real = len(this_algo.filter(line='下行', warning_type='真实'))
-        line_1_err = len(this_algo.filter(line='上行', warning_type='误报'))
-        line_2_err = len(this_algo.filter(line='下行', warning_type='误报'))
-        line_1_miss = len(this_algo.filter(line='上行', warning_type='漏报'))
-        line_2_miss = len(this_algo.filter(line='下行', warning_type='漏报'))
-        line_1_total = line_1_real + line_1_err
-        line_2_total = line_2_real + line_2_err
-        _this.append(line_1_total)
-        _this.append(line_1_real)
-        _this.append(line_1_err)
-        _this.append(line_1_miss)
-        _this.append(line_2_total)
-        _this.append(line_2_real)
-        _this.append(line_2_err)
-        _this.append(line_2_miss)
-        data.append(_this)
+    _site = [x.name for x in models.Site.objects.all()]
 
-
-
+    _index = 1
+    for _p in P_algo:
+        this_p_algo = all_warning.filter(algo__pid=_p)
+        _algo = set([y[0]['id'] for y in [x.algo.all().values('id') for x in this_p_algo]])
+        this_p_algo_count = len(_algo)
+        for _a in _algo:
+            _this = list()
+            this_algo = all_warning.filter(algo=_a)
+            this_algo_obj = models.Algo.objects.get(id=_a)
+            this_algo_obj_name = this_algo_obj.name
+            this_algo_parent_obj = models.Algo.objects.get(id=this_algo_obj.pid)
+            this_algo_parent_obj_name = this_algo_parent_obj.name
+            if _current_parent_algo is None or _current_parent_algo != this_algo_parent_obj_name:
+                _this.append(str(this_p_algo_count))
+                _this.append(this_algo_parent_obj_name)
+                _current_parent_algo = this_algo_parent_obj_name
+            else:
+                _this.append('')
+                _this.append('')
+            _this.append(this_algo_obj_name)
+            line_1_real = len(this_algo.filter(line='上行', warning_type='真实'))
+            line_2_real = len(this_algo.filter(line='下行', warning_type='真实'))
+            line_1_err = len(this_algo.filter(line='上行', warning_type='误报'))
+            line_2_err = len(this_algo.filter(line='下行', warning_type='误报'))
+            line_1_miss = len(this_algo.filter(line='上行', warning_type='漏报'))
+            line_2_miss = len(this_algo.filter(line='下行', warning_type='漏报'))
+            line_1_total = line_1_real + line_1_err
+            line_2_total = line_2_real + line_2_err
+            _this.append(line_1_total)
+            _this.append(line_1_real)
+            _this.append(line_1_err)
+            _this.append(line_1_miss)
+            _this.append(line_2_total)
+            _this.append(line_2_real)
+            _this.append(line_2_err)
+            _this.append(line_2_miss)
+            data.append(_this)
+            _index += 1
     _js = r"""<script src="/static/js/my/stat.js"></script>"""
     _css = r"""<link href="/static/css/my/dict.css" rel="stylesheet">"""
     _rMenu = r"""
@@ -78,13 +93,22 @@ def stat_page(request):
     <img src="/static/img/gallery/photo2.jpg" />
 </div>
 """
+
     return render_to_response(
         'base.html',
         {
-            'box_content': c.template.source,
-            'body_script': _js,
-            'body_style': _css,
-            'body_root_content': _rMenu,
+            'box_content': _redirect(
+                'stat',
+                {
+                    'body_script': _js,
+                    'body_style': _css,
+                    'body_root_content': _rMenu,
+                    'stat_data': data,
+                    'data_date': _date.strftime('%Y年%m月%d日'),
+                    'data_title': str(_date.month) + '月' + str(_date.day) + '日8时 - ' + str(_date.month) + '月' + str(_date.day + 1) + '日8时',
+                    'all_site': _site,
+                }
+            ),
         }
     )
 
@@ -118,6 +142,46 @@ def test(request):
             'algo_type':_set,
         }
     )
+
+
+def warning_detail(request, _date, _algo, _line, _err_type):
+    _date = datetime.datetime.strptime(_date, '%Y年%m月%d日')
+    all_warning = models.Warning.objects.filter(
+        warning_type=_err_type,
+        algo=models.Algo.objects.get(name=_algo),
+        line=_line,
+        date=_date,
+    )
+    data = list()
+    for w in all_warning:
+        _this = list()
+        _this.append(w.date.strftime('%Y年%m月%d日'))
+        _this.append(w.site.name)
+        _this.append(w.line)
+        _this.append(w.kind.name)
+        _this.append(w.side)
+        _this.append(w.warning_type)
+        _this.append(w.algo.all().values('name')[0]['name'])
+        _this.append(','.join([x['name'] for x in w.reason.all().values('name')]))
+        _this.append('/' + w.pic.name)
+        data.append(_this)
+
+    return render_to_response(
+        'base.html',
+        {
+            'box_content': _redirect(
+                'detail',
+                {
+                    'detail_data': data,
+                }
+            ),
+        }
+    )
+def search_warning(request):
+    _date = request.POST['r_date']
+    _to_date = datetime.datetime.strptime(_date, '%m/%d/%Y')
+    _site = request.POST['r_site']
+    return get_data(_site, _to_date)
 
 def add_warning(request):
     # if request.Method == 'POST':
