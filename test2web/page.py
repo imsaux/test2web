@@ -162,7 +162,7 @@ def warning_detail(request, _date, _algo, _line, _err_type):
         _this.append(w.side)
         _this.append(w.warning_type)
         _this.append(w.algo.all().values('name')[0]['name'])
-        _this.append(','.join([x['name'] for x in w.reason.all().values('name')]))
+        _this.append('、'.join([x['name'] for x in w.reason.all().values('name')]))
         _this.append('/' + w.pic.name)
         data.append(_this)
 
