@@ -1,7 +1,7 @@
 <div class="row-fluid sortable">
     <div class="box span12">
         <div class="box-header" data-original-title>
-            <h2><i class="halflings-icon white edit"></i><span class="break"></span>{{ data_date }}</h2>
+            <h2><i class="halflings-icon white edit"></i><span class="break"></span>{{ current_site }} {{ data_date }}</h2>
             <div class="box-icon">
                 <a href="#" class="btn-minimize"><i class="halflings-icon white chevron-up"></i></a>
             </div>
@@ -45,23 +45,23 @@
                         <td class="center">{{ d.3 }}</td>
 
                         <td class="center">
-                            {% if d.4 == 0 %}{{ d.4 }}{% else %}<a href="/detail/{{ data_date }}/{{ d.2 }}/上行/真实">
+                            {% if d.4 == 0 %}{{ d.4 }}{% else %}<a href="/detail/{{ data_date }}/{{ current_site }}/{{ d.2 }}/上行/真实">
                                 {{ d.4 }}{% endif %}</a></td>
                         <td class="center">
-                            {% if d.5 == 0 %}{{ d.5 }}{% else %}<a href="/detail/{{ data_date }}/{{ d.2 }}/上行/误报">
+                            {% if d.5 == 0 %}{{ d.5 }}{% else %}<a href="/detail/{{ data_date }}/{{ current_site }}/{{ d.2 }}/上行/误报">
                                 {{ d.5 }}{% endif %}</a></td>
                         <td class="center">
-                            {% if d.6 == 0 %}{{ d.6 }}{% else %}<a href="/detail/{{ data_date }}/{{ d.2 }}/上行/漏报">
+                            {% if d.6 == 0 %}{{ d.6 }}{% else %}<a href="/detail/{{ data_date }}/{{ current_site }}/{{ d.2 }}/上行/漏报">
                                 {{ d.6 }}{% endif %}</a></td>
                         <td class="center">{{ d.7 }}</td>
                         <td class="center">
-                            {% if d.8 == 0 %}{{ d.8 }}{% else %}<a href="/detail/{{ data_date }}/{{ d.2 }}/下行/真实">
+                            {% if d.8 == 0 %}{{ d.8 }}{% else %}<a href="/detail/{{ data_date }}/{{ current_site }}/{{ d.2 }}/下行/真实">
                                 {{ d.8 }}{% endif %}</a></td>
                         <td class="center">
-                            {% if d.9 == 0 %}{{ d.9 }}{% else %}<a href="/detail/{{ data_date }}/{{ d.2 }}/下行/误报">
+                            {% if d.9 == 0 %}{{ d.9 }}{% else %}<a href="/detail/{{ data_date }}/{{ current_site }}/{{ d.2 }}/下行/误报">
                                 {{ d.9 }}{% endif %}</a></td>
                         <td class="center">
-                            {% if d.10 == 0 %}{{ d.10 }}{% else %}<a href="/detail/{{ data_date }}/{{ d.2 }}/下行/漏报">
+                            {% if d.10 == 0 %}{{ d.10 }}{% else %}<a href="/detail/{{ data_date }}/{{ current_site }}/{{ d.2 }}/下行/漏报">
                                 {{ d.10 }}{% endif %}</a></td>
                     </tr>
                 {% endfor %}
@@ -96,7 +96,7 @@
                     <div class="control-group">
                         <label class="control-label" for="date01">日期</label>
                         <div class="controls">
-                            <input type="text" class="input-xlarge datepicker" id="date01" value=""
+                            <input type="text" class="input-xlarge datepicker" id="date01" value="{{ date_now }}"
                                    name="r_date">
                         </div>
                     </div>

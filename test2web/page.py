@@ -4,8 +4,7 @@ from django.template.loader import get_template
 from django.forms import *
 from . import logic
 from . import models
-import datetime
-
+from datetime import datetime, tzinfo,timedelta, timezone
 
 def _redirect(page, params):
     _page = page + '.html'
@@ -19,7 +18,7 @@ def warning_page(request):
     _kind = [x.name for x in models.Kind.objects.all()]
     _site = [x.name for x in models.Site.objects.all()]
     _reason = [x.name for x in models.Reason.objects.all()]
-    _date = datetime.datetime.now().strftime('%m/%d/%Y')
+    _date = datetime.now(tz=timezone(timedelta(hours=8))).strftime('%m/%d/%Y')
     return render_to_response(
         'base.html',
         {
@@ -42,12 +41,11 @@ def stat_page(request):
 def get_data(_site='杨柳青', _date=None):
     data = list()
     if _date is None:
-        _date = datetime.datetime.now()
+        _date = datetime.now(tz=timezone(timedelta(hours=8)))
     all_warning = models.Warning.objects.filter(site=models.Site.objects.get(name=_site), date__year=_date.year, date__month=_date.month, date__day=_date.day).order_by('algo__pid')
     P_algo = sorted(set([y[0]['pid'] for y in [x.algo.all().values('pid') for x in all_warning]]))
     _current_parent_algo = None
-    _site = [x.name for x in models.Site.objects.all()]
-
+    _select_site = [x.name for x in models.Site.objects.all()]
     _index = 1
     for _p in P_algo:
         this_p_algo = all_warning.filter(algo__pid=_p)
@@ -106,7 +104,9 @@ def get_data(_site='杨柳青', _date=None):
                     'stat_data': data,
                     'data_date': _date.strftime('%Y年%m月%d日'),
                     'data_title': str(_date.month) + '月' + str(_date.day) + '日8时 - ' + str(_date.month) + '月' + str(_date.day + 1) + '日8时',
-                    'all_site': _site,
+                    'all_site': _select_site,
+                    'current_site': _site,
+                    'date_now': _date.strftime('%m/%d/%Y')
                 }
             ),
         }
@@ -144,13 +144,14 @@ def test(request):
     )
 
 
-def warning_detail(request, _date, _algo, _line, _err_type):
-    _date = datetime.datetime.strptime(_date, '%Y年%m月%d日')
+def warning_detail(request, _date, _site, _algo, _line, _err_type):
+    _date = datetime.strptime(_date, '%Y年%m月%d日')
     all_warning = models.Warning.objects.filter(
         warning_type=_err_type,
         algo=models.Algo.objects.get(name=_algo),
         line=_line,
         date=_date,
+        site=models.Site.objects.get(name=_site),
     )
     data = list()
     for w in all_warning:
@@ -179,14 +180,14 @@ def warning_detail(request, _date, _algo, _line, _err_type):
     )
 def search_warning(request):
     _date = request.POST['r_date']
-    _to_date = datetime.datetime.strptime(_date, '%m/%d/%Y')
+    _to_date = datetime.strptime(_date, '%m/%d/%Y')
     _site = request.POST['r_site']
     return get_data(_site, _to_date)
 
 def add_warning(request):
     # if request.Method == 'POST':
     _date = request.POST['r_date']
-    _to_date = datetime.datetime.strptime(_date, '%m/%d/%Y')
+    _to_date = datetime.strptime(_date, '%m/%d/%Y')
     _site = models.Site.objects.get(name=request.POST['r_site'])
     _kind = models.Kind.objects.get(name=request.POST['r_kind'])
     _side = request.POST['r_side']
