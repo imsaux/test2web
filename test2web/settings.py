@@ -122,11 +122,5 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/dev/howto/static-files/
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'test2web', 'static')
-# STATICFILES_DIRS = (
-#     ('styles',os.path.join(STATIC_ROOT,'styles').replace('\\','/') ),
-#     ('scripts',os.path.join(STATIC_ROOT,'scripts').replace('\\','/') ),
-#     ('img',os.path.join(STATIC_ROOT,'imges').replace('\\','/') ),
-#     ('img_demo',os.path.join(STATIC_ROOT,'imges', 'demo').replace('\\','/') ),
-# )
 UPLOAD_URL = '/upload/'
 UPLOAD_ROOT = os.path.join(BASE_DIR, 'upload').replace("\\", "/")

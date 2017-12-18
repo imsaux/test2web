@@ -19,10 +19,6 @@ def to_log(mode, message):
         logging.info(message)
 
 
-# [4, 图像算法（线阵左右侧图像）, 货车车门开启, 4, 3, 1, 1, 4, 3, 1, 1]
-# [0, 客车车门开启, 4, 3, 1, 1, 4, 3, 1, 1]
-# [0, 悬挂异物, 4, 3, 1, 1, 4, 3, 1, 1]
-
 
 class ini_handle():
     def __init__(self, f=None):

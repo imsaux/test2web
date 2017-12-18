@@ -1,0 +1,109 @@
+<div class="row-fluid sortable">
+    <div class="box span12">
+        <div class="box-header" data-original-title>
+            <h2><i class="halflings-icon white edit"></i><span class="break"></span>添加运况数据</h2>
+            <div class="box-icon">
+                <a href="#" class="btn-setting"><i class="halflings-icon white wrench"></i></a>
+                <a href="#" class="btn-minimize"><i class="halflings-icon white chevron-up"></i></a>
+                <a href="#" class="btn-close"><i class="halflings-icon white remove"></i></a>
+            </div>
+        </div>
+        <div class="box-content">
+            <form class="form-horizontal" enctype="multipart/form-data" action="/add_info/" method="post">
+                <fieldset>
+                    <div class="control-group">
+                        <label class="control-label" for="date01">日期</label>
+                        <div class="controls">
+                            <input type="text" class="input-xlarge datepicker" id="date01" value="{{ date_now }}"
+                                   name="r_date">
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label" for="selectErrorSite">站点</label>
+                        <div class="controls">
+                            <select id="selectErrorSite" data-rel="chosen" name="r_site">
+                                {% for site in all_site %}
+                                    <option>{{ site }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label" for="sx_h_lie">上行货车</label>
+                        <div class="controls">
+                            <input id="sx_h_lie" class="input-xlarge focused" value="" type="text" name="sx_h_lie">
+                            <span class="add-on">列</span>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label" for="sx_h_liang">上行货车</label>
+                        <div class="controls">
+                            <input id="sx_h_liang" class="input-xlarge focused" value="" type="text" name="sx_h_liang">
+                            <span class="add-on">辆</span>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label" for="sx_k_lie">上行客车</label>
+                        <div class="controls">
+                            <input id="sx_k_lie" class="input-xlarge focused" value="" type="text" name="sx_k_lie">
+                            <span class="add-on">列</span>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label" for="sx_k_liang">上行客车</label>
+                        <div class="controls">
+                            <input id="sx_k_liang" class="input-xlarge focused" value="" type="text" name="sx_k_liang">
+                            <span class="add-on">辆</span>
+                        </div>
+                    </div>
+
+
+                    <div class="control-group">
+                        <label class="control-label" for="xx_h_lie">下行货车</label>
+                        <div class="controls">
+                            <input id="xx_h_lie" class="input-xlarge focused" value="" type="text" name="xx_h_lie">
+                            <span class="add-on">列</span>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label" for="xx_h_liang">下行货车</label>
+                        <div class="controls">
+                            <input id="xx_h_liang" class="input-xlarge focused" value="" type="text" name="xx_h_liang">
+                            <span class="add-on">辆</span>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label" for="xx_k_lie">下行客车</label>
+                        <div class="controls">
+                            <input id="xx_k_lie" class="input-xlarge focused" value="" type="text" name="xx_k_lie">
+                            <span class="add-on">列</span>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label" for="xx_k_liang">下行客车</label>
+                        <div class="controls">
+                            <input id="xx_k_liang" class="input-xlarge focused" value="" type="text" name="xx_k_liang">
+                            <span class="add-on">辆</span>
+
+                        </div>
+                    </div>
+
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">保存</button>
+                        <button type="reset" class="btn">取消</button>
+                    </div>
+                </fieldset>
+            </form>
+        </div>
+    </div>
+    <!-- content -->
+</div>

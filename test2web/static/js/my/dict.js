@@ -9,7 +9,7 @@ var setting = {
 
 var zNodes = [
     {
-        id: 2, name: "右键操作 2", open: true,
+        id: 1, name: "右键操作 2", open: true,
         children: [
             {id: 21, name: "节点 2-1"},
             {id: 22, name: "节点 2-2"},

@@ -30,3 +30,14 @@ class Warning(models.Model):
     reason = models.ManyToManyField(Reason, blank=True)
     pic = models.FileField(upload_to='upload/', blank=True)
 
+class Info(models.Model):
+    date = models.DateField()
+    site = models.ForeignKey(Site, on_delete=models.CASCADE)
+    sx_h_lie = models.IntegerField()
+    sx_h_liang = models.IntegerField()
+    sx_k_lie = models.IntegerField()
+    sx_k_liang = models.IntegerField()
+    xx_h_lie = models.IntegerField()
+    xx_h_liang = models.IntegerField()
+    xx_k_lie = models.IntegerField()
+    xx_k_liang = models.IntegerField()
