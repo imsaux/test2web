@@ -81,8 +81,8 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'web',
         'USER': 'sunyue',
-        'PASSWORD': 'Passw0rd',
-        'HOST': '172.1.10.87',
+        'PASSWORD': 'a1b2c3d4',
+        'HOST': '172.1.10.68',
         'PORT': '3306'
     }
 }
@@ -109,7 +109,6 @@ AUTH_PASSWORD_VALIDATORS = [
 # https://docs.djangoproject.com/en/dev/topics/i18n/
 
 LANGUAGE_CODE = 'en-us'
-
 TIME_ZONE = 'UTC'
 
 USE_I18N = True

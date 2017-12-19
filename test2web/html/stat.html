@@ -45,23 +45,23 @@
                         <td class="center">{{ d.3 }}</td>
 
                         <td class="center">
-                            {% if d.4 == 0 %}{{ d.4 }}{% else %}<a href="/detail/{{ data_date }}/{{ current_site }}/{{ d.2 }}/上行/真实">
+                            {% if d.4 == 0 %}{{ d.4 }}{% else %}<a href="/detail/{{ data_date }}/{{ current_site }}/{{ d.2 }}/上行/真实/{{ user }}/">
                                 {{ d.4 }}{% endif %}</a></td>
                         <td class="center">
-                            {% if d.5 == 0 %}{{ d.5 }}{% else %}<a href="/detail/{{ data_date }}/{{ current_site }}/{{ d.2 }}/上行/误报">
+                            {% if d.5 == 0 %}{{ d.5 }}{% else %}<a href="/detail/{{ data_date }}/{{ current_site }}/{{ d.2 }}/上行/误报/{{ user }}/">
                                 {{ d.5 }}{% endif %}</a></td>
                         <td class="center">
-                            {% if d.6 == 0 %}{{ d.6 }}{% else %}<a href="/detail/{{ data_date }}/{{ current_site }}/{{ d.2 }}/上行/漏报">
+                            {% if d.6 == 0 %}{{ d.6 }}{% else %}<a href="/detail/{{ data_date }}/{{ current_site }}/{{ d.2 }}/上行/漏报/{{ user }}/">
                                 {{ d.6 }}{% endif %}</a></td>
                         <td class="center">{{ d.7 }}</td>
                         <td class="center">
-                            {% if d.8 == 0 %}{{ d.8 }}{% else %}<a href="/detail/{{ data_date }}/{{ current_site }}/{{ d.2 }}/下行/真实">
+                            {% if d.8 == 0 %}{{ d.8 }}{% else %}<a href="/detail/{{ data_date }}/{{ current_site }}/{{ d.2 }}/下行/真实/{{ user }}/">
                                 {{ d.8 }}{% endif %}</a></td>
                         <td class="center">
-                            {% if d.9 == 0 %}{{ d.9 }}{% else %}<a href="/detail/{{ data_date }}/{{ current_site }}/{{ d.2 }}/下行/误报">
+                            {% if d.9 == 0 %}{{ d.9 }}{% else %}<a href="/detail/{{ data_date }}/{{ current_site }}/{{ d.2 }}/下行/误报/{{ user }}/">
                                 {{ d.9 }}{% endif %}</a></td>
                         <td class="center">
-                            {% if d.10 == 0 %}{{ d.10 }}{% else %}<a href="/detail/{{ data_date }}/{{ current_site }}/{{ d.2 }}/下行/漏报">
+                            {% if d.10 == 0 %}{{ d.10 }}{% else %}<a href="/detail/{{ data_date }}/{{ current_site }}/{{ d.2 }}/下行/漏报/{{ user }}/">
                                 {{ d.10 }}{% endif %}</a></td>
                     </tr>
                 {% endfor %}

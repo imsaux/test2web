@@ -28,7 +28,7 @@ urlpatterns = [
                   url(r'^add_warning/(.*)/$', add_warning, name='add_warning'),
                   url(r'^add_info/(.*)/$', add_info, name='add_info'),
                   url(r'^search_warning/(.*)/$', search_warning, name='search_warning'),
-                  url(r'^detail/(.*)/(.*)/(.*)/(.*)/(.*)/$', warning_detail, name='warning_detail'),
+                  url(r'^detail/(.*)/(.*)/(.*)/(.*)/(.*)/(.*)/$', warning_detail, name='warning_detail'),
                   url(r'^admin/', admin.site.urls, name='admin'),
                   url(r'^$', login),
                   url(r'^login/', login, name='login'),

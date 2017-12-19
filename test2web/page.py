@@ -1,4 +1,4 @@
-#coding=utf-8
+#-*- encoding:utf-8 -*-
 from django.forms import *
 from . import logic
 from . import models
@@ -8,6 +8,7 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.contrib.auth.admin import User
 from django import forms
 from django.contrib import auth
+import locale
 
 #定义表单模型
 class UserForm(forms.Form):
@@ -41,6 +42,7 @@ def _redirect(page, params):
     ).content.decode('utf8')
 
 def warning_page(request, _user):
+    check_user(request, _user)
     request.user = User.objects.get(username=_user)
 
     _algo = [x.name for x in models.Algo.objects.exclude(pid=0)]
@@ -59,17 +61,24 @@ def warning_page(request, _user):
                     'error_reason': _reason,
                     'date_now': _date,
                     'all_site': _site,
+                    'user': request.user,
                 }
             ),
             'user': request.user,
         }
     )
 
+def check_user(request, _user):
+    if _user == 'AnonymousUser':
+        return login(request)
+
 def stat_page(request, _user):
+    check_user(request, _user)
     request.user = User.objects.get(username=_user)
     return get_data(request)
 
 def get_data(request, _site='杨柳青', _date=None):
+    locale.setlocale(locale.LC_CTYPE, 'chinese')
     data = list()
     if _date is None:
         _date = datetime.now(tz=timezone(timedelta(hours=8)))
@@ -136,7 +145,6 @@ def get_data(request, _site='杨柳青', _date=None):
     <img src="/static/img/gallery/photo2.jpg" />
 </div>
 """
-
     return render_to_response(
         'base.html',
         {
@@ -162,10 +170,13 @@ def get_data(request, _site='杨柳青', _date=None):
     )
 
 def logout(request, _user):
+    check_user(request, _user)
     request.user = User.objects.get(username=_user)
     return login(request)
 
 def dict_page(request, _user):
+    check_user(request, _user)
+
     request.user = User.objects.get(username=_user)
     _js = r"""<script src="/static/js/my/dict.js"></script>"""
     _css = r"""<link href="/static/css/my/dict.css" rel="stylesheet">"""
@@ -193,7 +204,7 @@ def dict_page(request, _user):
     )
 
 def info_page(request, _user):
-
+    check_user(request, _user)
     request.user = User.objects.get(username=_user)
     _date = datetime.now(tz=timezone(timedelta(hours=8))).strftime('%m/%d/%Y')
     _site = [x.name for x in models.Site.objects.all()]
@@ -205,6 +216,7 @@ def info_page(request, _user):
                 {
                     'date_now': _date,
                     'all_site': _site,
+                    'user': request.user,
                 }
             ),
             'user': request.user,
@@ -220,7 +232,9 @@ def test(request):
         }
     )
 
-def warning_detail(request, _date, _site, _algo, _line, _err_type):
+def warning_detail(request, _date, _site, _algo, _line, _err_type, _user):
+    check_user(request, _user)
+    request.user = User.objects.get(username=_user)
     _date = datetime.strptime(_date, '%Y年%m月%d日')
     all_warning = models.Warning.objects.filter(
         warning_type=_err_type,
@@ -257,6 +271,7 @@ def warning_detail(request, _date, _site, _algo, _line, _err_type):
     )
 
 def search_warning(request, _user):
+    check_user(request, _user)
     request.user = User.objects.get(username=_user)
     _date = request.POST['r_date']
     _to_date = datetime.strptime(_date, '%m/%d/%Y')
@@ -264,6 +279,7 @@ def search_warning(request, _user):
     return get_data(request, _site, _to_date)
 
 def add_info(request, _user):
+    check_user(request, _user)
     request.user = User.objects.get(username=_user)
     _date = datetime.strptime(request.POST['r_date'], '%m/%d/%Y')
     _site = models.Site.objects.get(name=request.POST['r_site'])
@@ -288,9 +304,10 @@ def add_info(request, _user):
         xx_k_lie=_xx_k_lie,
     )
     _new.save()
-    return info_page(request)
+    return info_page(request, _user)
 
 def add_warning(request, _user):
+    check_user(request, _user)
     request.user = User.objects.get(username=_user)
     # if request.Method == 'POST':
     _date = request.POST['r_date']
@@ -322,27 +339,27 @@ def add_warning(request, _user):
     except Exception as e:
         logic.to_log('error', repr(e))
     finally:
-        return warning_page(request)
+        return warning_page(request,_user)
 
 def init(request):
 
 
 
 
-    # _r1 = models.Reason(pid=0, name='图像质量')
-    # _r2 = models.Reason(pid=0, name='截图不准')
-    # _r3 = models.Reason(pid=0, name='TOEC服务')
-    # _r4 = models.Reason(pid=0, name='算法本身')
-    # _r5 = models.Reason(pid=0, name='其他')
-    # _r1.save()
-    # _r2.save()
-    # _r3.save()
-    # _r4.save()
-    # _r5.save()
-    #
-    # _site1 = models.Site(name='杨柳青')
-    # _site2 = models.Site(name='静海')
-    # _site3 = models.Site(name='唐官屯')
+    _r1 = models.Reason(pid=0, name='图像质量')
+    _r2 = models.Reason(pid=0, name='截图不准')
+    _r3 = models.Reason(pid=0, name='TOEC服务')
+    _r4 = models.Reason(pid=0, name='算法本身')
+    _r5 = models.Reason(pid=0, name='其他')
+    _r1.save()
+    _r2.save()
+    _r3.save()
+    _r4.save()
+    _r5.save()
+
+    _site1 = models.Site(name='杨柳青')
+    _site2 = models.Site(name='静海')
+    _site3 = models.Site(name='唐官屯')
     _site4 = models.Site(name='虎石台')
     _site5 = models.Site(name='炎方')
     _site6 = models.Site(name='江都')
@@ -364,9 +381,9 @@ def init(request):
     _site22 = models.Site(name='那曲')
     _site23 = models.Site(name='拉萨')
     _site24 = models.Site(name='查汗诺')
-    # _site1.save()
-    # _site2.save()
-    # _site3.save()
+    _site1.save()
+    _site2.save()
+    _site3.save()
     _site4.save()
     _site5.save()
     _site6.save()
@@ -390,49 +407,49 @@ def init(request):
     _site24.save()
 
     #
-    # _kind1 = models.Kind(name='C（敞车）')
-    # _kind2 = models.Kind(name='P（篷车）')
-    # _kind3 = models.Kind(name='G（罐车）')
-    # _kind4 = models.Kind(name='N、X（平车）')
-    # _kind5 = models.Kind(name='W（毒品车）')
-    # _kind6 = models.Kind(name='B（冷藏车）')
-    # _kind1.save()
-    # _kind2.save()
-    # _kind3.save()
-    # _kind4.save()
-    # _kind5.save()
-    # _kind6.save()
-    #
-    # _algo1 = models.Algo(pid=0, name='图像算法（线阵左右侧图像）')
-    # _algo1.save()
-    # _algo11 = models.Algo(pid=_algo1.id, name='货车车门开启')
-    # _algo12 = models.Algo(pid=_algo1.id, name='客车车门开启')
-    # _algo13 = models.Algo(pid=_algo1.id, name='悬挂异物（货车）')
-    # _algo14 = models.Algo(pid=_algo1.id, name='货车尾管未吊起')
-    # _algo15 = models.Algo(pid=_algo1.id, name='动车注水口开启')
-    # _algo16 = models.Algo(pid=_algo1.id, name='车厢连接处异物')
-    # _algo11.save()
-    # _algo12.save()
-    # _algo13.save()
-    # _algo14.save()
-    # _algo15.save()
-    # _algo16.save()
-    # _algo2 = models.Algo(pid=0, name='图像算法（线阵走形部图像）')
-    # _algo2.save()
-    # _algo21 = models.Algo(pid=_algo2.id, name='货车折角塞门关闭')
-    # _algo22 = models.Algo(pid=_algo2.id, name='货车闸链拉紧')
-    # _algo23 = models.Algo(pid=_algo2.id, name='货车风管连接异常')
-    # _algo24 = models.Algo(pid=_algo2.id, name='客车电池盖开启')
-    # _algo21.save()
-    # _algo22.save()
-    # _algo23.save()
-    # _algo24.save()
-    #
-    # _algo3 = models.Algo(pid=0, name='轮温算法')
-    # _algo3.save()
-    # _algo31 = models.Algo(pid=_algo3.id, name='抱闸（热轮，轮温检测）')
-    # _algo31.save()
-    # _algo4 = models.Algo(pid=0, name='视频算法')
-    # _algo4.save()
-    # _algo5 = models.Algo(pid=0, name='声音算法')
-    # _algo5.save()
+    _kind1 = models.Kind(name='C（敞车）')
+    _kind2 = models.Kind(name='P（篷车）')
+    _kind3 = models.Kind(name='G（罐车）')
+    _kind4 = models.Kind(name='N、X（平车）')
+    _kind5 = models.Kind(name='W（毒品车）')
+    _kind6 = models.Kind(name='B（冷藏车）')
+    _kind1.save()
+    _kind2.save()
+    _kind3.save()
+    _kind4.save()
+    _kind5.save()
+    _kind6.save()
+
+    _algo1 = models.Algo(pid=0, name='图像算法（线阵左右侧图像）')
+    _algo1.save()
+    _algo11 = models.Algo(pid=_algo1.id, name='货车车门开启')
+    _algo12 = models.Algo(pid=_algo1.id, name='客车车门开启')
+    _algo13 = models.Algo(pid=_algo1.id, name='悬挂异物（货车）')
+    _algo14 = models.Algo(pid=_algo1.id, name='货车尾管未吊起')
+    _algo15 = models.Algo(pid=_algo1.id, name='动车注水口开启')
+    _algo16 = models.Algo(pid=_algo1.id, name='车厢连接处异物')
+    _algo11.save()
+    _algo12.save()
+    _algo13.save()
+    _algo14.save()
+    _algo15.save()
+    _algo16.save()
+    _algo2 = models.Algo(pid=0, name='图像算法（线阵走形部图像）')
+    _algo2.save()
+    _algo21 = models.Algo(pid=_algo2.id, name='货车折角塞门关闭')
+    _algo22 = models.Algo(pid=_algo2.id, name='货车闸链拉紧')
+    _algo23 = models.Algo(pid=_algo2.id, name='货车风管连接异常')
+    _algo24 = models.Algo(pid=_algo2.id, name='客车电池盖开启')
+    _algo21.save()
+    _algo22.save()
+    _algo23.save()
+    _algo24.save()
+
+    _algo3 = models.Algo(pid=0, name='轮温算法')
+    _algo3.save()
+    _algo31 = models.Algo(pid=_algo3.id, name='抱闸（热轮，轮温检测）')
+    _algo31.save()
+    _algo4 = models.Algo(pid=0, name='视频算法')
+    _algo4.save()
+    _algo5 = models.Algo(pid=0, name='声音算法')
+    _algo5.save()
