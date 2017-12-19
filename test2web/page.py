@@ -1,10 +1,37 @@
-from django.http import HttpResponse
-from django.shortcuts import render_to_response, render
-from django.template.loader import get_template
+#coding=utf-8
 from django.forms import *
 from . import logic
 from . import models
 from datetime import datetime, tzinfo,timedelta, timezone
+from django.shortcuts import render,render_to_response
+from django.http import HttpResponseRedirect, HttpResponse
+from django.contrib.auth.admin import User
+from django import forms
+from django.contrib import auth
+
+#定义表单模型
+class UserForm(forms.Form):
+    username = forms.CharField(label='用户名：',max_length=100)
+    password = forms.CharField(label='密码：',widget=forms.PasswordInput())
+
+#登录
+def login(request):
+    if request.method == 'POST':
+        uf = UserForm(request.POST)
+        if uf.is_valid():
+            #获取表单用户密码
+            username = uf.cleaned_data['username']
+            password = uf.cleaned_data['password']
+            #获取的表单数据与数据库进行比较
+            user = auth.authenticate(username=username, password=password)
+            request.user = user
+            if user:
+                return stat_page(request, user)
+            else:
+                return HttpResponseRedirect('/login/')
+    else:
+        uf = UserForm()
+    return render_to_response('login.html',{'uf':uf})
 
 def _redirect(page, params):
     _page = page + '.html'
@@ -13,7 +40,9 @@ def _redirect(page, params):
         params
     ).content.decode('utf8')
 
-def warning_page(request):
+def warning_page(request, _user):
+    request.user = User.objects.get(username=_user)
+
     _algo = [x.name for x in models.Algo.objects.exclude(pid=0)]
     _kind = [x.name for x in models.Kind.objects.all()]
     _site = [x.name for x in models.Site.objects.all()]
@@ -32,13 +61,15 @@ def warning_page(request):
                     'all_site': _site,
                 }
             ),
+            'user': request.user,
         }
     )
 
-def stat_page(request):
-    return get_data()
+def stat_page(request, _user):
+    request.user = User.objects.get(username=_user)
+    return get_data(request)
 
-def get_data(_site='杨柳青', _date=None):
+def get_data(request, _site='杨柳青', _date=None):
     data = list()
     if _date is None:
         _date = datetime.now(tz=timezone(timedelta(hours=8)))
@@ -122,12 +153,20 @@ def get_data(_site='杨柳青', _date=None):
                     'current_site': _site,
                     'date_now': _date.strftime('%m/%d/%Y'),
                     'info': _info,
+                    'user': request.user,
+
                 }
             ),
+            'user': request.user,
         }
     )
 
-def dict_page(request):
+def logout(request, _user):
+    request.user = User.objects.get(username=_user)
+    return login(request)
+
+def dict_page(request, _user):
+    request.user = User.objects.get(username=_user)
     _js = r"""<script src="/static/js/my/dict.js"></script>"""
     _css = r"""<link href="/static/css/my/dict.css" rel="stylesheet">"""
     _rMenu = r"""
@@ -149,11 +188,13 @@ def dict_page(request):
             'body_script': _js,
             'body_style': _css,
             'body_root_content': _rMenu,
-
-        }
+            'user': request.user,
+        },
     )
 
-def info_page(request):
+def info_page(request, _user):
+
+    request.user = User.objects.get(username=_user)
     _date = datetime.now(tz=timezone(timedelta(hours=8))).strftime('%m/%d/%Y')
     _site = [x.name for x in models.Site.objects.all()]
     return render_to_response(
@@ -166,6 +207,7 @@ def info_page(request):
                     'all_site': _site,
                 }
             ),
+            'user': request.user,
         }
     )
 
@@ -210,16 +252,19 @@ def warning_detail(request, _date, _site, _algo, _line, _err_type):
                     'detail_data': data,
                 }
             ),
+            'user': request.user,
         }
     )
 
-def search_warning(request):
+def search_warning(request, _user):
+    request.user = User.objects.get(username=_user)
     _date = request.POST['r_date']
     _to_date = datetime.strptime(_date, '%m/%d/%Y')
     _site = request.POST['r_site']
-    return get_data(_site, _to_date)
+    return get_data(request, _site, _to_date)
 
-def add_info(request):
+def add_info(request, _user):
+    request.user = User.objects.get(username=_user)
     _date = datetime.strptime(request.POST['r_date'], '%m/%d/%Y')
     _site = models.Site.objects.get(name=request.POST['r_site'])
     _sx_h_lie = int(request.POST['sx_h_lie']) if request.POST['sx_h_lie']!='' else 0;
@@ -245,7 +290,8 @@ def add_info(request):
     _new.save()
     return info_page(request)
 
-def add_warning(request):
+def add_warning(request, _user):
+    request.user = User.objects.get(username=_user)
     # if request.Method == 'POST':
     _date = request.POST['r_date']
     _to_date = datetime.strptime(_date, '%m/%d/%Y')

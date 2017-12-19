@@ -1,5 +1,11 @@
 from django.db import models
+from django.contrib.auth.admin import User
+# from django.contrib import admin
 
+
+class user_profile(models.Model):
+    user = models.OneToOneField(User, unique=True, verbose_name=('用户'), on_delete=models.CASCADE)
+    phone_number = models.CharField(max_length=255)
 
 class Dict(models.Model):
     pid = models.IntegerField()
