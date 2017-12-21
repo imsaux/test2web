@@ -1,8 +1,0 @@
-[Desktop Entry]
-Encoding=UTF-8
-Version=1.0
-Name=django_web
-Comment=Starts the VirtualBox machine django_web
-Type=Application
-Exec=/usr/lib/virtualbox/VirtualBox --comment "django_web" --startvm "58c23a47-8198-4625-a887-d10e83c98347"
-Icon=virtualbox-vbox.png

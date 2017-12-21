@@ -1,8 +1,0 @@
-[Desktop Entry]
-Encoding=UTF-8
-Version=1.0
-Name=sunyue
-Comment=Starts the VirtualBox machine sunyue
-Type=Application
-Exec=/usr/lib/virtualbox/VirtualBox --comment "sunyue" --startvm "23bb82e2-fb0f-47bf-9251-38c7b32503de"
-Icon=virtualbox-vbox.png
