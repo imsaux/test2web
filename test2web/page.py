@@ -78,22 +78,22 @@ def stat_page(request, _user):
     return get_data(request)
 
 def get_data(request, _site='杨柳青', _date=None):
-    locale.setlocale(locale.LC_CTYPE, 'chinese')
+    # locale.setlocale(locale.LC_CTYPE, 'chinese')
     data = list()
     if _date is None:
         _date = datetime.now(tz=timezone(timedelta(hours=8)))
     all_warning = models.Warning.objects.filter(site=models.Site.objects.get(name=_site), date__year=_date.year, date__month=_date.month, date__day=_date.day).order_by('algo__pid')
     try:
-        all_info = models.Info.objects.get(site=models.Site.objects.get(name=_site), date=_date)
+        all_info = models.Info.objects.filter(site=models.Site.objects.get(name=_site), date=_date)
         _info = [
-            all_info.sx_h_lie,
-            all_info.sx_h_liang,
-            all_info.sx_k_lie,
-            all_info.sx_k_liang,
-            all_info.xx_h_lie,
-            all_info.xx_h_liang,
-            all_info.xx_k_lie,
-            all_info.xx_k_liang,
+            all_info.last().sx_h_lie,
+            all_info.last().sx_h_liang,
+            all_info.last().sx_k_lie,
+            all_info.last().sx_k_liang,
+            all_info.last().xx_h_lie,
+            all_info.last().xx_h_liang,
+            all_info.last().xx_k_lie,
+            all_info.last().xx_k_liang,
             ]
     except Exception as e:
         _info = [0]*8
