@@ -9,6 +9,8 @@ from django.contrib.auth.admin import User
 from django import forms
 from django.contrib import auth
 import locale
+import pickle
+import json
 
 #定义表单模型
 class UserForm(forms.Form):
@@ -78,7 +80,7 @@ def stat_page(request, _user):
     return get_data(request)
 
 def get_data(request, _site='杨柳青', _date=None):
-    # locale.setlocale(locale.LC_CTYPE, 'chinese')
+    locale.setlocale(locale.LC_CTYPE, 'chinese')
     data = list()
     if _date is None:
         _date = datetime.now(tz=timezone(timedelta(hours=8)))
@@ -155,7 +157,7 @@ def get_data(request, _site='杨柳青', _date=None):
                     'body_style': _css,
                     'body_root_content': _rMenu,
                     'stat_data': data,
-                    'data_date': _date.strftime('%Y年%m月%d日'),
+                    'data_date': _date.strftime('%Y') + '年' + _date.strftime('%m') + '月' + _date.strftime('%d') + '日',
                     'data_title': str(_date.month) + '月' + str(_date.day) + '日8时 - ' + str(_date.month) + '月' + str(_date.day + 1) + '日8时',
                     'all_site': _select_site,
                     'current_site': _site,
@@ -231,6 +233,17 @@ def test(request):
             'algo_type':_set,
         }
     )
+
+def get_config(request):
+    # 为4g站更新配置
+    pass
+
+
+def import_data(request, _site_name, _json):
+    # 接收4G站点数据
+    _j = json.loads(_json)
+    for key in _j.keys():
+        pass
 
 def warning_detail(request, _date, _site, _algo, _line, _err_type, _user):
     check_user(request, _user)

@@ -27,11 +27,13 @@ urlpatterns = [
                   url(r'^init/$', init, name='init'),
                   url(r'^add_warning/(.*)/$', add_warning, name='add_warning'),
                   url(r'^add_info/(.*)/$', add_info, name='add_info'),
+                  url(r'^add_data/(.*)/(.*)/$', import_data, name='import_data'),
                   url(r'^search_warning/(.*)/$', search_warning, name='search_warning'),
                   url(r'^detail/(.*)/(.*)/(.*)/(.*)/(.*)/(.*)/$', warning_detail, name='warning_detail'),
                   url(r'^admin/', admin.site.urls, name='admin'),
                   url(r'^$', login),
                   url(r'^login/', login, name='login'),
                   url(r'^logout/(.*)$', logout, name='logout'),
+                  url(r'^get_config/', get_config, name='get_config'),
               ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 urlpatterns += static(settings.UPLOAD_URL, document_root=settings.UPLOAD_ROOT)
