@@ -183,13 +183,13 @@ def dict_page(request, _user):
     _js = r"""<script src="/static/js/my/dict.js"></script>"""
     _css = r"""<link href="/static/css/my/dict.css" rel="stylesheet">"""
     _rMenu = r"""
-<div id="rMenu">
-    <ul>
-        <li id="m_add" onclick="addTreeNode();">增加节点</li>
-        <li id="m_del" onclick="removeTreeNode();">删除节点</li>
-        <li id="m_check" onclick="editTreeNode();">修改节点</li>
-    </ul>
-</div>"""
+        <div id="rMenu">
+            <ul>
+                <li id="m_add" onclick="addTreeNode();">增加节点</li>
+                <li id="m_del" onclick="removeTreeNode();">删除节点</li>
+                <li id="m_check" onclick="editTreeNode();">修改节点</li>
+            </ul>
+        </div>"""
     return render_to_response(
         'base.html',
         {
@@ -239,11 +239,14 @@ def get_config(request):
     pass
 
 
-def import_data(request, _site_name, _json):
+def import_data(request):
     # 接收4G站点数据
-    _j = json.loads(_json)
-    for key in _j.keys():
-        pass
+    pass
+
+
+def daily_report(request):
+    
+
 
 def warning_detail(request, _date, _site, _algo, _line, _err_type, _user):
     check_user(request, _user)
@@ -433,13 +436,14 @@ def init(request):
     _kind5.save()
     _kind6.save()
 
+
     _algo1 = models.Algo(pid=0, name='图像算法（线阵左右侧图像）')
     _algo1.save()
-    _algo11 = models.Algo(pid=_algo1.id, name='货车车门开启')
+    _algo11 = models.Algo(pid=_algo1.id, name='车门开启')
     _algo12 = models.Algo(pid=_algo1.id, name='客车车门开启')
-    _algo13 = models.Algo(pid=_algo1.id, name='悬挂异物（货车）')
-    _algo14 = models.Algo(pid=_algo1.id, name='货车尾管未吊起')
-    _algo15 = models.Algo(pid=_algo1.id, name='动车注水口开启')
+    _algo13 = models.Algo(pid=_algo1.id, name='异物')
+    _algo14 = models.Algo(pid=_algo1.id, name='尾管未吊起')
+    _algo15 = models.Algo(pid=_algo1.id, name='动车注水口')
     _algo16 = models.Algo(pid=_algo1.id, name='车厢连接处异物')
     _algo11.save()
     _algo12.save()
@@ -447,22 +451,28 @@ def init(request):
     _algo14.save()
     _algo15.save()
     _algo16.save()
+
+    _algo17 = models.Algo(pid=_algo1.id, name='车窗开启')
+    _algo18 = models.Algo(pid=_algo1.id, name='闲杂人员')
+    _algo17.save()
+    _algo18.save()
+
+
     _algo2 = models.Algo(pid=0, name='图像算法（线阵走形部图像）')
     _algo2.save()
-    _algo21 = models.Algo(pid=_algo2.id, name='货车折角塞门关闭')
-    _algo22 = models.Algo(pid=_algo2.id, name='货车闸链拉紧')
-    _algo23 = models.Algo(pid=_algo2.id, name='货车风管连接异常')
-    _algo24 = models.Algo(pid=_algo2.id, name='客车电池盖开启')
+    _algo21 = models.Algo(pid=_algo2.id, name='折角塞门关闭')
+    _algo22 = models.Algo(pid=_algo2.id, name='闸链拉紧')
+    _algo23 = models.Algo(pid=_algo2.id, name='风管断开')
+    _algo24 = models.Algo(pid=_algo2.id, name='客车蓄电池盖开启')
+    _algo25 = models.Algo(pid=_algo2.id, name='鞲鞴杆拉链拉紧')
+    _algo26 = models.Algo(pid=_algo2.id, name='尾管未吊起（走行部检测）')
+    _algo27 = models.Algo(pid=_algo2.id, name='折角塞门开启')
     _algo21.save()
     _algo22.save()
     _algo23.save()
     _algo24.save()
+    _algo25.save()
+    _algo26.save()
+    _algo27.save()
 
-    _algo3 = models.Algo(pid=0, name='轮温算法')
-    _algo3.save()
-    _algo31 = models.Algo(pid=_algo3.id, name='抱闸（热轮，轮温检测）')
-    _algo31.save()
-    _algo4 = models.Algo(pid=0, name='视频算法')
-    _algo4.save()
-    _algo5 = models.Algo(pid=0, name='声音算法')
-    _algo5.save()
+

@@ -38,8 +38,8 @@ class Warning(models.Model):
     pic = models.FileField(upload_to='upload/', blank=True)
 
 class Info(models.Model):
-    date = models.DateField()
-    site = models.ForeignKey(Site, on_delete=models.CASCADE)
+    datetime = models.DateTimeField()
+    site = models.CharField(max_length=255)
     sx_h_lie = models.IntegerField()
     sx_h_liang = models.IntegerField()
     sx_k_lie = models.IntegerField()
@@ -48,3 +48,15 @@ class Info(models.Model):
     xx_h_liang = models.IntegerField()
     xx_k_lie = models.IntegerField()
     xx_k_liang = models.IntegerField()
+
+class Client(models.Model):
+    datetime = models.DateTimeField()   # 日期
+    site = models.CharField(max_length=255) # 站点名称
+    algo = models.CharField(max_length=255) # 报警类型
+    count = models.IntegerField()    # 数量
+    status = models.BooleanField(default=False)   # 审批状态
+
+class DailyReport(models.Model):
+    date = models.DateField()
+    qa = models.CharField(max_length=255, blank=True)   # 备注
+    track = models.CharField(max_length=255, blank=True)  # 问题追踪

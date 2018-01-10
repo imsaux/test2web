@@ -1,9 +1,13 @@
 <div class="row-fluid sortable">
     <div class="box span12">
         <div class="box-header" data-original-title>
-            <h2><i class="halflings-icon white edit"></i><span class="break"></span>添加报警数据</h2>
+            <h2>
+                <i class="halflings-icon white edit"></i>
+                <span class="break"></span>添加报警数据</h2>
             <div class="box-icon">
-                <a href="#" class="btn-minimize"><i class="halflings-icon white chevron-up"></i></a>
+                <a href="#" class="btn-minimize">
+                    <i class="halflings-icon white chevron-up"></i>
+                </a>
             </div>
         </div>
         <div class="box-content">
@@ -12,8 +16,7 @@
                     <div class="control-group">
                         <label class="control-label" for="date01">日期</label>
                         <div class="controls">
-                            <input type="text" class="input-xlarge datepicker" id="date01" value="{{ date_now }}"
-                                   name="r_date">
+                            <input type="text" class="input-xlarge datepicker" id="date01" value="{{ date_now }}" name="r_date">
                         </div>
                     </div>
 
@@ -22,7 +25,7 @@
                         <div class="controls">
                             <select id="selectErrorSite" data-rel="chosen" name="r_site">
                                 {% for site in all_site %}
-                                    <option>{{ site }}</option>
+                                <option>{{ site }}</option>
                                 {% endfor %}
                             </select>
                         </div>
@@ -42,12 +45,10 @@
                         <label class="control-label" for="selectErrorKind">车种</label>
                         <div class="controls">
                             <select id="selectErrorKind" data-rel="chosen" name="r_kind">
-                                {% if train_kind %}
-                                    {% for kind in train_kind %}
-                                        <option>{{ kind }}</option>
-                                    {% endfor %}
-                                {% else %}
-                                    <option>无</option>
+                                {% if train_kind %} {% for kind in train_kind %}
+                                <option>{{ kind }}</option>
+                                {% endfor %} {% else %}
+                                <option>无</option>
                                 {% endif %}
                             </select>
                         </div>
@@ -79,12 +80,10 @@
                         <label class="control-label" for="selectAlgoType">算法类型</label>
                         <div class="controls">
                             <select id="selectAlgoType" data-rel="chosen" name="r_algo_type">
-                                {% if algo_type %}
-                                    {% for x in algo_type %}
-                                        <option>{{ x }}</option>
-                                    {% endfor %}
-                                {% else %}
-                                    <option>无</option>
+                                {% if algo_type %} {% for x in algo_type %}
+                                <option>{{ x }}</option>
+                                {% endfor %} {% else %}
+                                <option>无</option>
                                 {% endif %}
                             </select>
                         </div>
@@ -94,12 +93,10 @@
                         <label class="control-label" for="selectErrorM">误报、漏报原因</label>
                         <div class="controls">
                             <select id="selectReasons" multiple name="r_reason">
-                                {% if error_reason %}
-                                    {% for reason in error_reason %}
-                                        <option>{{ reason }}</option>
-                                    {% endfor %}
-                                {% else %}
-                                    <option>无</option>
+                                {% if error_reason %} {% for reason in error_reason %}
+                                <option>{{ reason }}</option>
+                                {% endfor %} {% else %}
+                                <option>无</option>
                                 {% endif %}
                             </select>
                             <p>*按住CTRL多选</p>
