@@ -46,7 +46,6 @@ def _redirect(page, params):
 def warning_page(request, _user):
     check_user(request, _user)
     request.user = User.objects.get(username=_user)
-
     _algo = [x.name for x in models.Algo.objects.exclude(pid=0)]
     _kind = [x.name for x in models.Kind.objects.all()]
     _site = [x.name for x in models.Site.objects.all()]
@@ -80,7 +79,7 @@ def stat_page(request, _user):
     return get_data(request)
 
 def get_data(request, _site='杨柳青', _date=None):
-    locale.setlocale(locale.LC_CTYPE, 'chinese')
+    # locale.setlocale(locale.LC_CTYPE, 'chinese')
     data = list()
     if _date is None:
         _date = datetime.now(tz=timezone(timedelta(hours=8)))
@@ -178,7 +177,6 @@ def logout(request, _user):
 
 def dict_page(request, _user):
     check_user(request, _user)
-
     request.user = User.objects.get(username=_user)
     _js = r"""<script src="/static/js/my/dict.js"></script>"""
     _css = r"""<link href="/static/css/my/dict.css" rel="stylesheet">"""
@@ -241,10 +239,39 @@ def get_config(request):
 
 def import_data(request):
     # 接收4G站点数据
-    pass
+    data = request.POST
 
 
-def daily_report(request):
+
+def daily_view(request):
+    _data = models.Client.objects.filter()
+    _title = datetime.now().strftime('%Y年%m月%d日')
+
+    return render_to_response(
+        'base.html',
+        {
+            'box_content': _redirect(
+                'daily_view',
+                {
+                    'title': _title,
+                }
+            ),
+            'user': None,
+        }
+    )
+
+def _get_range_date(date, _startwith):
+    _delta = datetime.timedelta(days=-1)
+    _start_date = datetime.strptime((date + _delta).strftime('%Y-%m-%d') + ' ' + str(_startwith).zfill(2) + ':00:00', '%Y-%m-%d %H:%M:%S')
+    _end_date = datetime.strptime(date.strftime('%Y-%m-%d') + ' ' + str(_startwith).zfill(2) + ':00:00', '%Y-%m-%d %H:%M:%S')
+    return _start_date, _end_date
+
+
+def daily_search(request, _user):
+    check_user(request, _user)
+    request.user = models.User.objects.get(username=_user)
+    _now = datetime.now().date()
+    search_client = models.Client.objects.filter(datetime__range=_get_range_date(_now))
     
 
 

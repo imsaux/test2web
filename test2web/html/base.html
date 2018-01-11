@@ -42,7 +42,7 @@
 	<![endif]-->
 
     <!-- start: Favicon -->
-    <link rel="shortcut icon" href="{% static "img1/favicon.ico" %}">
+    <link rel="shortcut icon" href="{% static "img/favicon.ico" %}">
     <!-- end: Favicon -->
 
 
@@ -72,24 +72,28 @@
         <div id="sidebar-left" class="span2">
             <div class="nav-collapse sidebar-nav">
                 <ul class="nav nav-tabs nav-stacked main-menu">
-                    {% if user.is_staff %}
-                        <li><a href="/warning/{{ user }}"><i class="icon-envelope"></i><span
-                                class="hidden-tablet"> 报警录入</span></a></li>
-                        <li><a href="/info/{{ user }}"><i class="icon-envelope"></i><span
-                                class="hidden-tablet"> 运况录入</span></a></li>
-                    {% endif %}
-                    <li><a href="/stat/{{ user }}"><i class="icon-tasks"></i><span class="hidden-tablet"> 统计分析</span></a>
-                    </li>
-                    {% if user.is_superuser %}
-                        <li><a href="/dict/{{ user }}"><i class="icon-edit"></i><span class="hidden-tablet"> 字典管理</span></a>
+                    {% if user is not None %}
+                        {% if user.is_staff %}
+                            <li><a href="/warning/{{ user }}"><i class="icon-envelope"></i><span
+                                    class="hidden-tablet"> 报警录入</span></a></li>
+                            <li><a href="/info/{{ user }}"><i class="icon-envelope"></i><span
+                                    class="hidden-tablet"> 运况录入</span></a></li>
+                        {% endif %}
+                        <li><a href="/stat/{{ user }}"><i class="icon-tasks"></i><span
+                                class="hidden-tablet"> 统计分析</span></a>
                         </li>
-                        {#                    <li><a href="/admin"><i class="icon-list-alt"></i><span#}
-                        {#                            class="hidden-tablet"> 用户权限</span></a>#}
+                        {% if user.is_superuser %}
+                            <li><a href="/dict/{{ user }}"><i class="icon-edit"></i><span
+                                    class="hidden-tablet"> 字典管理</span></a>
+                            </li>
+                            {#                    <li><a href="/admin"><i class="icon-list-alt"></i><span#}
+                            {#                            class="hidden-tablet"> 用户权限</span></a>#}
+                            </li>
+                        {% endif %}
+                        <li><a href="/logout/{{ user }}"><i class="icon-list-alt"></i><span
+                                class="hidden-tablet">登出</span></a>
                         </li>
                     {% endif %}
-                                    <li><a href="/logout/{{ user }}"><i class="icon-list-alt"></i><span class="hidden-tablet">登出</span></a>
-                    </li>
-
                 </ul>
             </div>
         </div>
