@@ -49,11 +49,20 @@ class Info(models.Model):
     xx_k_lie = models.IntegerField(default=0)
     xx_k_liang = models.IntegerField(default=0)
 
-class Client(models.Model):
+class ClientWarning(models.Model):
     datetime = models.DateTimeField()   # 日期
     site = models.CharField(max_length=255) # 站点名称
     algo = models.CharField(max_length=255) # 报警类型
     count = models.IntegerField(default=0)    # 数量
+    status = models.BooleanField(default=False)   # 审批状态
+
+class ClientStatus(models.Model):
+    datetime = models.DateTimeField()   # 日期
+    site = models.CharField(max_length=255) # 站点名称
+    line_1_trains = models.IntegerField(default=0)
+    line_2_trains = models.IntegerField(default=0)
+    line_1_carriages = models.IntegerField(default=0)
+    line_2_carriages = models.IntegerField(default=0)
     status = models.BooleanField(default=False)   # 审批状态
 
 class DailyReport(models.Model):

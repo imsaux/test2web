@@ -1,9 +1,9 @@
-#-*- encoding:utf-8 -*-
+# -*- encoding:utf-8 -*-
 from django.forms import *
 from . import logic
 from . import models
-from datetime import datetime, tzinfo,timedelta, timezone
-from django.shortcuts import render,render_to_response
+from datetime import datetime, tzinfo, timedelta, timezone
+from django.shortcuts import render, render_to_response
 from django.http import HttpResponseRedirect, HttpResponse
 from django.contrib.auth.admin import User
 from django import forms
@@ -12,20 +12,22 @@ import locale
 import pickle
 import json
 
-#定义表单模型
-class UserForm(forms.Form):
-    username = forms.CharField(label='用户名：',max_length=100)
-    password = forms.CharField(label='密码：',widget=forms.PasswordInput())
 
-#登录
+# 定义表单模型
+class UserForm(forms.Form):
+    username = forms.CharField(label='用户名：', max_length=100)
+    password = forms.CharField(label='密码：', widget=forms.PasswordInput())
+
+
+# 登录
 def login(request):
     if request.method == 'POST':
         uf = UserForm(request.POST)
         if uf.is_valid():
-            #获取表单用户密码
+            # 获取表单用户密码
             username = uf.cleaned_data['username']
             password = uf.cleaned_data['password']
-            #获取的表单数据与数据库进行比较
+            # 获取的表单数据与数据库进行比较
             user = auth.authenticate(username=username, password=password)
             request.user = user
             if user:
@@ -34,7 +36,8 @@ def login(request):
                 return HttpResponseRedirect('/login/')
     else:
         uf = UserForm()
-    return render_to_response('login.html',{'uf':uf})
+    return render_to_response('login.html', {'uf': uf})
+
 
 def _redirect(page, params):
     _page = page + '.html'
@@ -42,6 +45,7 @@ def _redirect(page, params):
         _page,
         params
     ).content.decode('utf8')
+
 
 def warning_page(request, _user):
     check_user(request, _user)
@@ -69,21 +73,25 @@ def warning_page(request, _user):
         }
     )
 
+
 def check_user(request, _user):
     if _user == 'AnonymousUser':
         return login(request)
+
 
 def stat_page(request, _user):
     check_user(request, _user)
     request.user = User.objects.get(username=_user)
     return get_data(request)
 
+
 def get_data(request, _site='杨柳青', _date=None):
     # locale.setlocale(locale.LC_CTYPE, 'chinese')
     data = list()
     if _date is None:
         _date = datetime.now(tz=timezone(timedelta(hours=8)))
-    all_warning = models.Warning.objects.filter(site=models.Site.objects.get(name=_site), date__year=_date.year, date__month=_date.month, date__day=_date.day).order_by('algo__pid')
+    all_warning = models.Warning.objects.filter(site=models.Site.objects.get(name=_site), date__year=_date.year,
+                                                date__month=_date.month, date__day=_date.day).order_by('algo__pid')
     try:
         all_info = models.Info.objects.filter(site=models.Site.objects.get(name=_site), date=_date)
         _info = [
@@ -95,9 +103,9 @@ def get_data(request, _site='杨柳青', _date=None):
             all_info.last().xx_h_liang,
             all_info.last().xx_k_lie,
             all_info.last().xx_k_liang,
-            ]
+        ]
     except Exception as e:
-        _info = [0]*8
+        _info = [0] * 8
     P_algo = sorted(set([y[0]['pid'] for y in [x.algo.all().values('pid') for x in all_warning]]))
     _current_parent_algo = None
     _select_site = [x.name for x in models.Site.objects.all()]
@@ -157,7 +165,8 @@ def get_data(request, _site='杨柳青', _date=None):
                     'body_root_content': _rMenu,
                     'stat_data': data,
                     'data_date': _date.strftime('%Y') + '年' + _date.strftime('%m') + '月' + _date.strftime('%d') + '日',
-                    'data_title': str(_date.month) + '月' + str(_date.day) + '日8时 - ' + str(_date.month) + '月' + str(_date.day + 1) + '日8时',
+                    'data_title': str(_date.month) + '月' + str(_date.day) + '日8时 - ' + str(_date.month) + '月' + str(
+                        _date.day + 1) + '日8时',
                     'all_site': _select_site,
                     'current_site': _site,
                     'date_now': _date.strftime('%m/%d/%Y'),
@@ -170,10 +179,12 @@ def get_data(request, _site='杨柳青', _date=None):
         }
     )
 
+
 def logout(request, _user):
     check_user(request, _user)
     request.user = User.objects.get(username=_user)
     return login(request)
+
 
 def dict_page(request, _user):
     check_user(request, _user)
@@ -203,6 +214,7 @@ def dict_page(request, _user):
         },
     )
 
+
 def info_page(request, _user):
     check_user(request, _user)
     request.user = User.objects.get(username=_user)
@@ -223,14 +235,16 @@ def info_page(request, _user):
         }
     )
 
+
 def test(request):
     _set = [x.name for x in models.Algo.objects.exclude(pid=0)]
     return render_to_response(
         'add_warning.html',
         {
-            'algo_type':_set,
+            'algo_type': _set,
         }
     )
+
 
 def get_config(request):
     # 为4g站更新配置
@@ -239,9 +253,22 @@ def get_config(request):
 
 def import_data(request):
     # 接收4G站点数据
-    data = request.POST
+    site_name = line_1_trains = line_2_trains = line_1_carriages = line_2_carriages = None
+    for key in request.POST.keys():
+        if key == '站点':
+            site_name = request.POST['站点']
+        elif key == '1列数':
+            line_1_trains = request.POST['1列数']
+        elif key == '2列数':
+            line_2_trains = request.POST['2列数']
+        elif key == '1辆数':
+            line_1_carriages = request.POST['1辆数']
+        elif key == '2辆数':
+            line_2_carriages = request.POST['2辆数']
+        else:
+            new = models.Client(
 
-
+            )
 
 def daily_view(request):
     _data = models.Client.objects.filter()
@@ -260,10 +287,13 @@ def daily_view(request):
         }
     )
 
+
 def _get_range_date(date, _startwith):
     _delta = datetime.timedelta(days=-1)
-    _start_date = datetime.strptime((date + _delta).strftime('%Y-%m-%d') + ' ' + str(_startwith).zfill(2) + ':00:00', '%Y-%m-%d %H:%M:%S')
-    _end_date = datetime.strptime(date.strftime('%Y-%m-%d') + ' ' + str(_startwith).zfill(2) + ':00:00', '%Y-%m-%d %H:%M:%S')
+    _start_date = datetime.strptime((date + _delta).strftime('%Y-%m-%d') + ' ' + str(_startwith).zfill(2) + ':00:00',
+                                    '%Y-%m-%d %H:%M:%S')
+    _end_date = datetime.strptime(date.strftime('%Y-%m-%d') + ' ' + str(_startwith).zfill(2) + ':00:00',
+                                  '%Y-%m-%d %H:%M:%S')
     return _start_date, _end_date
 
 
@@ -272,7 +302,6 @@ def daily_search(request, _user):
     request.user = models.User.objects.get(username=_user)
     _now = datetime.now().date()
     search_client = models.Client.objects.filter(datetime__range=_get_range_date(_now))
-    
 
 
 def warning_detail(request, _date, _site, _algo, _line, _err_type, _user):
@@ -313,6 +342,7 @@ def warning_detail(request, _date, _site, _algo, _line, _err_type, _user):
         }
     )
 
+
 def search_warning(request, _user):
     check_user(request, _user)
     request.user = User.objects.get(username=_user)
@@ -321,19 +351,20 @@ def search_warning(request, _user):
     _site = request.POST['r_site']
     return get_data(request, _site, _to_date)
 
+
 def add_info(request, _user):
     check_user(request, _user)
     request.user = User.objects.get(username=_user)
     _date = datetime.strptime(request.POST['r_date'], '%m/%d/%Y')
     _site = models.Site.objects.get(name=request.POST['r_site'])
-    _sx_h_lie = int(request.POST['sx_h_lie']) if request.POST['sx_h_lie']!='' else 0;
-    _sx_h_liang = int(request.POST['sx_h_liang']) if request.POST['sx_h_liang']!='' else 0;
-    _sx_k_lie = int(request.POST['sx_k_lie']) if request.POST['sx_k_lie']!='' else 0;
-    _sx_k_liang = int(request.POST['sx_k_liang']) if request.POST['sx_k_liang']!='' else 0;
-    _xx_h_lie = int(request.POST['xx_h_lie']) if request.POST['xx_h_lie']!='' else 0;
-    _xx_h_liang = int(request.POST['xx_h_liang']) if request.POST['xx_h_liang']!='' else 0;
-    _xx_k_lie = int(request.POST['xx_k_lie']) if request.POST['xx_k_lie']!='' else 0;
-    _xx_k_liang = int(request.POST['xx_k_liang']) if request.POST['xx_k_liang']!='' else 0;
+    _sx_h_lie = int(request.POST['sx_h_lie']) if request.POST['sx_h_lie'] != '' else 0;
+    _sx_h_liang = int(request.POST['sx_h_liang']) if request.POST['sx_h_liang'] != '' else 0;
+    _sx_k_lie = int(request.POST['sx_k_lie']) if request.POST['sx_k_lie'] != '' else 0;
+    _sx_k_liang = int(request.POST['sx_k_liang']) if request.POST['sx_k_liang'] != '' else 0;
+    _xx_h_lie = int(request.POST['xx_h_lie']) if request.POST['xx_h_lie'] != '' else 0;
+    _xx_h_liang = int(request.POST['xx_h_liang']) if request.POST['xx_h_liang'] != '' else 0;
+    _xx_k_lie = int(request.POST['xx_k_lie']) if request.POST['xx_k_lie'] != '' else 0;
+    _xx_k_liang = int(request.POST['xx_k_liang']) if request.POST['xx_k_liang'] != '' else 0;
     _new = models.Info(
         date=_date,
         site=_site,
@@ -348,6 +379,7 @@ def add_info(request, _user):
     )
     _new.save()
     return info_page(request, _user)
+
 
 def add_warning(request, _user):
     check_user(request, _user)
@@ -382,13 +414,10 @@ def add_warning(request, _user):
     except Exception as e:
         logic.to_log('error', repr(e))
     finally:
-        return warning_page(request,_user)
+        return warning_page(request, _user)
+
 
 def init(request):
-
-
-
-
     _r1 = models.Reason(pid=0, name='图像质量')
     _r2 = models.Reason(pid=0, name='截图不准')
     _r3 = models.Reason(pid=0, name='TOEC服务')
@@ -463,7 +492,6 @@ def init(request):
     _kind5.save()
     _kind6.save()
 
-
     _algo1 = models.Algo(pid=0, name='图像算法（线阵左右侧图像）')
     _algo1.save()
     _algo11 = models.Algo(pid=_algo1.id, name='车门开启')
@@ -484,7 +512,6 @@ def init(request):
     _algo17.save()
     _algo18.save()
 
-
     _algo2 = models.Algo(pid=0, name='图像算法（线阵走形部图像）')
     _algo2.save()
     _algo21 = models.Algo(pid=_algo2.id, name='折角塞门关闭')
@@ -501,5 +528,3 @@ def init(request):
     _algo25.save()
     _algo26.save()
     _algo27.save()
-
-
