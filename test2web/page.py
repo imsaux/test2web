@@ -291,6 +291,8 @@ def _datetime_format(date=datetime.datetime.now(), mode=1):
         return date.strftime('%Y%m%d%H%M%S')
     elif mode == 3:
         return date.strftime('%m/%d/%Y')
+    elif mode == 4:
+        return str(date.year) + '年' + str(date.month) + '月' + str(date.day) + '日 ' + str(date.hour).zfill(2) + ':' + str(date.minute).zfill(2) + ':' + str(date.second).zfill(2)
 
 def _get_daily_data(_from=None, _to=None):
     _return = list()
@@ -339,14 +341,22 @@ def _get_daily_data(_from=None, _to=None):
             _new.save()
             _data_info = models.DailyReport.objects.get(site=_site, date=datetime.datetime.now())
         finally:
-            report_qa = _data_info.qa
-            report_track = _data_info.track
+            report_qa = str(_data_info.qa, encoding='utf-8')
+            report_track = str(_data_info.track, encoding='utf-8')
         _return.append([_site, carriages_count, warning_str, report_qa, report_track, _data_info.id, _data_info.status])
     return _return
 
 
 def daily_view(request):
     public_reports = models.DailyReport.objects.filter(date=datetime.datetime.now(), status=True)
+    _return = list()
+    for site in public_reports:
+        _site = site.site
+        _carriages = site.carriages
+        _warning = site.warning
+        _qa = str(site.qa, encoding='utf-8')
+        _track = str(site.track, encoding='utf-8')
+        _return.append([_site, _carriages, _warning, _qa, _track])
     return render_to_response(
         'base.html',
         {
@@ -354,7 +364,7 @@ def daily_view(request):
                 'daily_view',
                 {
                     'title': _datetime_format(),
-                    'data':public_reports,
+                    'data': _return,
                 }
             ),
             'user': request.user,
@@ -364,7 +374,6 @@ def daily_view(request):
 
 def daily_manage(request, _from=None, _to=None):
     all_data = _get_daily_data(_from=_from, _to=_to)
-
     return render_to_response(
         'base.html',
         {
@@ -407,12 +416,17 @@ def daily_save(request, _id):
         obj.carriages = int(request.POST['carriages'])
     except Exception as e:
         pass
-    qa = request.POST['qa']
-    track = request.POST['track']
-    warning = request.POST['warning']
-    obj.qa = qa
-    obj.track = track
-    obj.warning = warning
+    try:
+        obj.qa = str(request.POST['qa']).encode()
+    except Exception as e:
+        pass
+
+    try:
+        obj.track = str(request.POST['track']).encode()
+    except Exception as e:
+        pass
+
+    obj.warning = request.POST['warning']
     obj.save()
     return daily_manage(request)
 
@@ -420,18 +434,19 @@ def daily_save(request, _id):
 def daily_edit(request, _id):
     _range_from = _get_range_date(datetime.datetime.now())[0]
     _range_to = _get_range_date(datetime.datetime.now())[1]
-    _from_str = _datetime_format(date=_range_from)
-    _to_str = _datetime_format(date=_range_to)
+    _from_str = _datetime_format(date=_range_from, mode=4)
+    _to_str = _datetime_format(date=_range_to, mode=4)
     _report_data = models.DailyReport.objects.get(id=_id)
-
+    _qa = str(_report_data.qa, encoding='utf-8')
+    _track = str(_report_data.track, encoding='utf-8')
     return render_to_response(
         'base.html',
         {
             'box_content': _redirect(
                 'daily_edit',
                 {
-                    'title': '-'.join([_from_str, _to_str]),
-                    'data': _report_data,
+                    'title': _report_data.site + '  ' + ' - '.join([_from_str, _to_str]),
+                    'data': [_report_data.site, _report_data.carriages, _report_data.warning, _qa, _track, _report_data.id],
                 }
             ),
             'user': request.user,

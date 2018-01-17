@@ -70,6 +70,8 @@ class DailyReport(models.Model):
     site = models.CharField(max_length=255, blank=True)
     warning = models.CharField(max_length=255, blank=True)
     carriages = models.IntegerField(default=0)
-    qa = models.CharField(max_length=255, blank=True, default='无')   # 备注
-    track = models.CharField(max_length=255, blank=True,  default='无')  # 问题追踪
+    qa = models.BinaryField(blank=True)   # 备注
+    track = models.BinaryField(blank=True)   # 问题追踪
+    # qa = models.CharField(max_length=255, blank=True, default='无')   # 备注
+    # track = models.CharField(max_length=255, blank=True,  default='无')  # 问题追踪
     status = models.BooleanField(default=False)   # 审批状态
