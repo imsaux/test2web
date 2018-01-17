@@ -28,14 +28,22 @@ urlpatterns = [
                   url(r'^add_warning/(.*)/$', add_warning, name='add_warning'),
                   url(r'^add_info/(.*)/$', add_info, name='add_info'),
                   url(r'^add_data/$', import_data, name='import_data'),
-                  url(r'^daily_report/$', daily_view, name='daily_report'),
+                  url(r'^daily_view/$', daily_view, name='daily_view'), # 展示
+                  url(r'^daily_manage/$', daily_manage, name='daily_manage'), # 展示
+
+                  url(r'^daily_edit/(.*)/$', daily_edit, name='daily_edit'),
+                  url(r'^daily_save/(.*)/$', daily_save, name='daily_save'),
+                  url(r'^daily_confirm/(.*)/$', daily_confirm, name='daily_confirm'),
+                  url(r'^daily_unconfirm/(.*)/$', daily_unconfirm, name='daily_unconfirm'),
+                  # url(r'^daily_delete/(.*)/$', daily_delete, name='daily_delete'),
                   url(r'^search_warning/(.*)/$', search_warning, name='search_warning'),
-                  url(r'^daily_searchdaily_edit/(.*)/$', daily_search, name='daily_search'),
                   url(r'^detail/(.*)/(.*)/(.*)/(.*)/(.*)/(.*)/$', warning_detail, name='warning_detail'),
                   url(r'^admin/', admin.site.urls, name='admin'),
                   url(r'^$', login),
+                  url(r'^register/$', register),
                   url(r'^login/', login, name='login'),
-                  url(r'^logout/(.*)$', logout, name='logout'),
+                  url(r'^logout/$', logout, name='logout'),
                   url(r'^get_config/', get_config, name='get_config'),
-              ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+              ]
+urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 urlpatterns += static(settings.UPLOAD_URL, document_root=settings.UPLOAD_ROOT)

@@ -66,7 +66,10 @@ class ClientStatus(models.Model):
     status = models.BooleanField(default=False)   # 审批状态
 
 class DailyReport(models.Model):
-    start_datetime = models.DateTimeField()
-    end_datetime = models.DateTimeField()
+    date = models.DateField(default=None, blank=True)
+    site = models.CharField(max_length=255, blank=True)
+    warning = models.CharField(max_length=255, blank=True)
+    carriages = models.IntegerField(default=0)
     qa = models.CharField(max_length=255, blank=True, default='无')   # 备注
     track = models.CharField(max_length=255, blank=True,  default='无')  # 问题追踪
+    status = models.BooleanField(default=False)   # 审批状态

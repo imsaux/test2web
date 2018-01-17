@@ -26,11 +26,13 @@
                     {% if data %}
                         {% for item in data %}
                             <tr>
-                                <td>{{ item.0 }}</td>
-                                <td class="center">{{ item.1 }}</td>
-                                <td class="center">{{ item.2 }}</td>
-                                <td class="center">{{ item.3 }}</td>
-                                <td class="center">{{ item.4 }}</td>
+                                <td>{{ item.site }}</td>
+                                <td class="center">{{ item.carriages }}</td>
+                                <td class="center">{{ item.warning }}</td>
+                                {% autoescape off %}
+                                    <td class="center">{{ item.qa }}</td>
+                                    <td class="center">{{ item.track }}</td>
+                                {% endautoescape %}
                             </tr>
                         {% endfor %}
                     {% else %}

@@ -12,59 +12,84 @@
         </div>
         <div class="box-content">
             <div class="box-content">
-                <!-- <table class="table table-striped table-bordered bootstrap-datatable datatable">
-                    <thead>
-                    <tr>
-                        <th>车站</th>
-                        <th>过车数量</th>
-                        <th>报警数</th>
-                        <th>问题及处理</th>
-                        <th>问题追踪</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {% if data %}
-                        {% for item in data %}
-                            <tr>
-                                <td>{{ item.0 }}</td>
-                                <td class="center">{{ item.1 }}</td>
-                                <td class="center">{{ item.2 }}</td>
-                                <td class="center">{{ item.3 }}</td>
-                                <td class="center">{{ item.4 }}</td>
-                            </tr>
-                        {% endfor %}
-                    {% else %}
-                        <tr>
-                            <td class="center">无</td>
-                            <td class="center"></td>
-                            <td class="center"></td>
-                            <td class="center"></td>
-                            <td class="center"></td>
-                        </tr>
-                    {% endif %}
-                    </tbody>
-                </table> -->
-                <form class="form-horizontal" enctype="multipart/form-data" action="/add_warning/{{ user }}/" method="post">
+                {#                 <table class="table table-striped table-bordered bootstrap-datatable datatable">#}
+                {#                    <thead>#}
+                {#                    <tr>#}
+                {#                        <th>车站</th>#}
+                {#                        <th>过车数量</th>#}
+                {#                        <th>报警数</th>#}
+                {#                        <th>问题及处理</th>#}
+                {#                        <th>问题追踪</th>#}
+                {#                    </tr>#}
+                {#                    </thead>#}
+                {#                    <tbody>#}
+                {#                    {% if data %}#}
+                {#                        {% for item in data %}#}
+                {#                            <tr>#}
+                {#                                <td>{{ item.0 }}</td>#}
+                {#                                <td class="center">{{ item.1 }}</td>#}
+                {#                                <td class="center">{{ item.2 }}</td>#}
+                {#                                <td class="center">{{ item.3 }}</td>#}
+                {#                                <td class="center">{{ item.4 }}</td>#}
+                {#                            </tr>#}
+                {#                        {% endfor %}#}
+                {#                    {% else %}#}
+                {#                        <tr>#}
+                {#                            <td class="center">无</td>#}
+                {#                            <td class="center"></td>#}
+                {#                            <td class="center"></td>#}
+                {#                            <td class="center"></td>#}
+                {#                            <td class="center"></td>#}
+                {#                        </tr>#}
+                {#                    {% endif %}#}
+                {#                    </tbody>#}
+                {#                </table> #}
+                <form class="form-horizontal" enctype="multipart/form-data" action="/daily_save/{{ data.id }}/"
+                      method="post">
                     <fieldset>
-                        <div class="control-group">
-                            <label class="control-label" for="date01">日期</label>
-                            <div class="controls">
-                                <input type="text" class="input-xlarge datepicker" id="date01" value="{{ date_now }}" name="r_data">
+                        {% if data %}
+{#                            <div class="control-group">#}
+{#                                <label class="control-label" for="site">车站</label>#}
+{#                                <div class="controls">#}
+{#                                    <input id="site" class="input-xlarge focused" value="{{ data.site }}" type="text"#}
+{#                                           name="site">#}
+{##}
+{#                                </div>#}
+{#                            </div>#}
+
+                            <div class="control-group">
+                                <label class="control-label" for="carriages">过车数</label>
+                                <div class="controls">
+                                    <input id="carriages" class="input-xlarge focused" value="{{ data.carriages }}" type="text"
+                                           name="carriages">
+
+                                </div>
                             </div>
-                        </div>
+
+
+                            <div class="control-group">
+                                <label class="control-label" for="warning">报警数</label>
+                                <div class="controls">
+                                    <input id="warning" class="input-xlarge focused" value="{{ data.warning }}" type="text"
+                                           name="warning">
+
+                                </div>
+                            </div>
+
+                        {% endif %}
 
 
                         <div class="control-group hidden-phone">
-                            <label class="control-label" for="tr_1"></label>
+                            <label class="control-label" for="tr_1">问题及处理</label>
                             <div class="controls">
-                                <textarea class="cleditor" id="tr_1" rows="2"></textarea>
+                                <textarea class="cleditor" id="tr_1" rows="2" name="qa">{{ data.qa }}</textarea>
                             </div>
                         </div>
 
                         <div class="control-group hidden-phone">
-                            <label class="control-label" for="tr_2"></label>
+                            <label class="control-label" for="tr_2">问题追踪</label>
                             <div class="controls">
-                                <textarea class="cleditor" id="tr_2" rows="2"></textarea>
+                                <textarea class="cleditor" id="tr_2" rows="2" name="track">{{ data.track }}</textarea>
                             </div>
                         </div>
 
