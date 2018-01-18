@@ -283,6 +283,7 @@ def import_data(request):
                 count=int(request.POST[key])
             )
             new_warning.save()
+    return HttpResponse(status=200)
 
 def _datetime_format(date=datetime.datetime.now(), mode=1):
     if mode == 1:
@@ -296,55 +297,62 @@ def _datetime_format(date=datetime.datetime.now(), mode=1):
 
 def _get_daily_data(_from=None, _to=None):
     _return = list()
-    if _from is None:
+
+    # 日期输入合法性检查
+    if _from is None or not isinstance(datetime, _from):
         _from = _get_range_date(datetime.datetime.now())[0]
-    if _to is None:
+    if _to is None or not isinstance(datetime, _to):
         _to = _get_range_date(datetime.datetime.now())[1]
-    _range_from = _get_range_date(_from)[0]
-    _range_to = _get_range_date(_to)[1]
 
-    _sites = [x['site'] for x in models.ClientWarning.objects.filter(datetime__range=(_range_from, _range_to)).values('site').distinct()]
-    for _site in _sites:
-        # _test_from = _get_range_date(date=datetime.datetime(year=2018, month=1, day=13))[0]
-        # _test_to = _get_range_date(date=datetime.datetime(year=2018, month=1, day=13))[1]
-        # _data_warning = models.ClientWarning.objects.filter(site=_site, datetime__range=(_test_from, _test_to))
-        # _data_status = models.ClientStatus.objects.filter(site=_site, datetime__range=(_test_from, _test_to))
-        _data_warning = models.ClientWarning.objects.filter(site=_site, datetime__range=(_range_from, _range_to))
-        _data_status = models.ClientStatus.objects.filter(site=_site, datetime__range=(_range_from, _range_to))
-        _columns = [x['algo'] for x in _data_warning.values('algo').distinct()]
-        if len(_columns) == 0:
-            warning_str = '无'
-        else:
-            warning_str = ''
-            for col in _columns:
-                if warning_str == '':
-                    warning_str += str(col) + str(_data_warning.filter(algo=col).last().count)
-                else:
-                    warning_str += ';' + str(col) + str(_data_warning.filter(algo=col).last().count)
+    # 列出站点
+    _data_sites = models.ClientWarning.objects.filter(datetime__range=(_from, _to))
+    if len(_data_sites) > 0:
+        _sites = [x['site'] for x in _data_sites.values('site').distinct()]
+        for _site in _sites:    # 遍历每个站点信息
+            _data_warning = models.ClientWarning.objects.filter(site=_site, datetime__range=(_from, _to))
+            _data_status = models.ClientStatus.objects.filter(site=_site, datetime__range=(_from, _to))
+            _columns = [x['algo'] for x in _data_warning.values('algo').distinct()] # 列出报警类型
+            if len(_columns) == 0:
+                warning_str = '无'
+            else:
+                warning_str = ''
+                for col in _columns:
+                    if warning_str == '':
+                        warning_str += str(col) + str(_data_warning.filter(algo=col).last().count)
+                    else:
+                        warning_str += ';' + str(col) + str(_data_warning.filter(algo=col).last().count)
+            if len(_data_status) > 0:
+                carriages_count = int(_data_status.values('line_1_carriages').last()['line_1_carriages']) + int(_data_status.values('line_2_carriages').last()['line_2_carriages'])
+            else:
+                carriages_count = 0
 
-        carriages_count = int(_data_status.values('line_1_carriages').last()['line_1_carriages']) + int(_data_status.values('line_2_carriages').last()['line_2_carriages'])
+            # 读取当日日报记录，若没有将新建
+            try:
+                _data_info = models.DailyReport.objects.get(site=_site, date=datetime.datetime.now())
+                carriages_count = _data_info.carriages
+                warning_str = _data_info.warning
 
-        try:
-            _data_info = models.DailyReport.objects.get(site=_site, date=datetime.datetime.now())
-            carriages_count = _data_info.carriages
-            warning_str = _data_info.warning
+            except:
+                _new = models.DailyReport(
+                    site=_site,
+                    date=datetime.datetime.now(),
+                    carriages=carriages_count,
+                    warning=warning_str,
+                    qa='无'.encode(),
+                    track='无'.encode(),
+                )
+                _new.save()
+            finally:
+                _data_info = models.DailyReport.objects.get(site=_site, date=datetime.datetime.now())
+                report_qa = str(_data_info.qa, encoding='utf-8')
+                report_track = str(_data_info.track, encoding='utf-8')
 
-        except:
-            _new = models.DailyReport(
-                site=_site,
-                date=datetime.datetime.now(),
-                carriages=carriages_count,
-                warning=warning_str,
-                qa='无',
-                track='无',
-            )
-            _new.save()
-            _data_info = models.DailyReport.objects.get(site=_site, date=datetime.datetime.now())
-        finally:
-            report_qa = str(_data_info.qa, encoding='utf-8')
-            report_track = str(_data_info.track, encoding='utf-8')
-        _return.append([_site, carriages_count, warning_str, report_qa, report_track, _data_info.id, _data_info.status])
-    return _return
+            # 将一个站点的名称、过车辆数、报警记录与日报表中问题追踪及处理情况汇总并返回该列表
+            _return.append([_site, carriages_count, warning_str, report_qa, report_track, _data_info.id, _data_info.status])
+        return _return
+    else:
+        # 没有站点表示当天没有任何数据
+        return None
 
 
 def daily_view(request):
