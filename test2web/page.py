@@ -47,7 +47,7 @@ def register(request):
             username = uf.cleaned_data['username']
             password = uf.cleaned_data['password']
             try:
-                user = user = User.objects.create_user(username=username)
+                user = User.objects.create_user(username=username)
                 user.set_password(password)
                 user.save()
             except Exception as e:
