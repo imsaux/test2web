@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 
 <html lang="en">
+
 <head>
 
     <!-- start: Meta -->
@@ -8,8 +9,7 @@
     <title>站点报警信息监控系统</title>
     <meta name="description" content="Bootstrap Metro Dashboard">
     <meta name="author" content="Dennis Ji">
-    <meta name="keyword"
-          content="Metro, Metro UI, Dashboard, Bootstrap, Admin, Template, Theme, Responsive, Fluid, Retina">
+    <meta name="keyword" content="Metro, Metro UI, Dashboard, Bootstrap, Admin, Template, Theme, Responsive, Fluid, Retina">
     <!-- end: Meta -->
 
     <!-- start: Mobile Specific -->
@@ -17,17 +17,13 @@
     <!-- end: Mobile Specific -->
     {% load staticfiles %}
     <!-- start: CSS -->
-    <link id="bootstrap-style" href="{% static "css/bootstrap.min.css" %}" rel="stylesheet">
-    <link href="{% static "css/bootstrap-responsive.min.css" %}" rel="stylesheet">
-    <link id="base-style" href="{% static "css/style.css" %}" rel="stylesheet">
-    <link id="base-style-responsive" href="{% static "css/style-responsive.css" %}" rel="stylesheet">
-    <link rel="stylesheet" href="{% static "css/zTreeStyle/zTreeStyle.css" %}" type="text/css">
-
-    {% autoescape off %}
-        {{ head_script }}
-    {% endautoescape %}
-
-    {#	<link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800&subset=latin,cyrillic-ext,latin-ext' rel='stylesheet' type='text/css'>#}
+    <link id="bootstrap-style" href="{% static " css/bootstrap.min.css " %}" rel="stylesheet">
+    <link href="{% static " css/bootstrap-responsive.min.css " %}" rel="stylesheet">
+    <link id="base-style" href="{% static " css/style.css " %}" rel="stylesheet">
+    <link id="base-style-responsive" href="{% static " css/style-responsive.css " %}" rel="stylesheet">
+    <link rel="stylesheet" href="{% static " css/zTreeStyle/zTreeStyle.css " %}" type="text/css"> {% autoescape off %} {{ head_script }} {% endautoescape %} {#
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800&subset=latin,cyrillic-ext,latin-ext'
+        rel='stylesheet' type='text/css'>#}
     <!-- end: CSS -->
 
 
@@ -42,155 +38,168 @@
 	<![endif]-->
 
     <!-- start: Favicon -->
-    <link rel="shortcut icon" href="{% static "img/favicon.ico" %}">
+    <link rel="shortcut icon" href="{% static " img/favicon.ico " %}">
     <!-- end: Favicon -->
 
 
 </head>
+
 <body>
-<div class="navbar">
-    <div class="navbar-inner">
-        <div class="container-fluid">
-            <a class="btn btn-navbar" data-toggle="collapse"
-               data-target=".top-nav.nav-collapse,.sidebar-nav.nav-collapse">
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-            </a>
-            <a class="brand"><span>站点报警信息监控系统</span></a>
-            {% if user.is_authenticated %}
+    <div class="navbar">
+        <div class="navbar-inner">
+            <div class="container-fluid">
+                <a class="btn btn-navbar" data-toggle="collapse" data-target=".top-nav.nav-collapse,.sidebar-nav.nav-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </a>
+                <a class="brand">
+                    <span>站点报警信息监控系统</span>
+                </a>
+                {% if user.is_authenticated %}
                 <p>{{ user.username }}, 你好</p>
-            {% else %}
+                {% else %}
                 <p>游客, 你好</p>
-            {% endif %}
-        </div>
-    </div>
-</div>
-
-{% autoescape off %}
-    {{ body_root_content }}
-{% endautoescape %}
-
-<div class="container-fluid-full">
-    <div class="row-fluid">
-        <!-- start: Main Menu -->
-        <div id="sidebar-left" class="span2">
-            <div class="nav-collapse sidebar-nav">
-                <ul class="nav nav-tabs nav-stacked main-menu">
-                    {% if user.is_authenticated%}
-                        {% if user.is_staff %}
-{#                            <li><a href="/warning"><i class="icon-envelope"></i><span#}
-{#                                    class="hidden-tablet"> 报警录入</span></a></li>#}
-{#                            <li><a href="/info"><i class="icon-envelope"></i><span#}
-{#                                    class="hidden-tablet"> 运况录入</span></a></li>#}
-                            <li><a href="/daily_manage"><i class="icon-envelope"></i><span
-                                    class="hidden-tablet"> 日报表管理</span></a></li>
-
-                        {% endif %}
-{#                        <li><a href="/stat"><i class="icon-tasks"></i><span#}
-{#                                class="hidden-tablet"> 统计分析</span></a>#}
-{#                        </li>#}
-                        <li><a href="/daily_view"><i class="icon-tasks"></i><span
-                                class="hidden-tablet"> 当日日报</span></a>
-                        </li>
-                        {% if user.is_superuser %}
-                            <li><a href="/dict"><i class="icon-edit"></i><span
-                                    class="hidden-tablet"> 字典管理</span></a>
-                            </li>
-                            {#                    <li><a href="/admin"><i class="icon-list-alt"></i><span#}
-                            {#                            class="hidden-tablet"> 用户权限</span></a>#}
-                            </li>
-                        {% endif %}
-                        <li><a href="/logout"><i class="icon-list-alt"></i><span
-                                class="hidden-tablet">登出</span></a>
-                        </li>
-                    {% endif %}
-                </ul>
+                {% endif %}
             </div>
         </div>
-        <!-- end: Main Menu -->
-        <div id="content" class="span10">
-            <!-- content -->
-            {% autoescape off %}
-                {{ box_content }}
-            {% endautoescape %}
-            <!-- content -->
+    </div>
+
+    {% autoescape off %} {{ body_root_content }} {% endautoescape %}
+
+    <div class="container-fluid-full">
+        <div class="row-fluid">
+            <!-- start: Main Menu -->
+            <div id="sidebar-left" class="span2">
+                <div class="nav-collapse sidebar-nav">
+                    <ul class="nav nav-tabs nav-stacked main-menu">
+                        <li>
+                            <a href="/daily_view">
+                                <i class="icon-tasks"></i>
+                                <span class="hidden-tablet"> 当日日报</span>
+                            </a>
+                        </li>
+
+                        {% if user.is_authenticated%} {% if user.is_staff %} {#
+                        <li>
+                            <a href="/warning">
+                                <i class="icon-envelope"></i>
+                                <span#} {# class="hidden-tablet"> 报警录入</span>
+                            </a>
+                        </li>#} {#
+                        <li>
+                            <a href="/info">
+                                <i class="icon-envelope"></i>
+                                <span#} {# class="hidden-tablet"> 运况录入</span>
+                            </a>
+                        </li>#}
+                        <li>
+                            <a href="/daily_manage">
+                                <i class="icon-envelope"></i>
+                                <span class="hidden-tablet"> 日报表管理</span>
+                            </a>
+                        </li>
+
+                        {% endif %} {#
+                        <li>
+                            <a href="/stat">
+                                <i class="icon-tasks"></i>
+                                <span#} {# class="hidden-tablet"> 统计分析</span>
+                            </a>#} {# </li>#} {% if user.is_superuser %}
+                        <li>
+                            <a href="/dict">
+                                <i class="icon-edit"></i>
+                                <span class="hidden-tablet"> 字典管理</span>
+                            </a>
+                        </li>
+                        {% endif %}
+                        <li>
+                            <a href="/logout">
+                                <i class="icon-list-alt"></i>
+                                <span class="hidden-tablet">登出</span>
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+            <!-- end: Main Menu -->
+            <div id="content" class="span10">
+                <!-- content -->
+                {% autoescape off %} {{ box_content }} {% endautoescape %}
+                <!-- content -->
+            </div>
         </div>
     </div>
-</div>
-<div class="clearfix"></div>
+    <div class="clearfix"></div>
 
-<footer>
+    <footer>
 
-    <p>
-        <span style="text-align:left;float:left">&copy; 2017 </span>
+        <p>
+            <span style="text-align:left;float:left">&copy; 2018 </span>
 
-    </p>
+        </p>
 
-</footer>
+    </footer>
 
-<!-- start: JavaScript-->
-<script type="text/javascript" src="{% static "js/jquery.js" %}"></script>
-<script type="text/javascript" src="{% static "js/jquery.ztree.core.js" %}"></script>
-<script type="text/javascript" src="{% static "js/jquery.ztree.excheck.js" %}"></script>
-<script type="text/javascript" src="{% static "js/jquery.ztree.exedit.js" %}"></script>
-<script src="{% static "js/jquery-migrate-1.0.0.min.js" %}"></script>
+    <!-- start: JavaScript-->
+    <script type="text/javascript" src="{% static " js/jquery.js " %}"></script>
+    <script type="text/javascript" src="{% static " js/jquery.ztree.core.js " %}"></script>
+    <script type="text/javascript" src="{% static " js/jquery.ztree.excheck.js " %}"></script>
+    <script type="text/javascript" src="{% static " js/jquery.ztree.exedit.js " %}"></script>
+    <script src="{% static " js/jquery-migrate-1.0.0.min.js " %}"></script>
 
-<script src="{% static "js/jquery-ui-1.10.0.custom.min.js" %}"></script>
+    <script src="{% static " js/jquery-ui-1.10.0.custom.min.js " %}"></script>
 
-<script src="{% static "js/jquery.ui.touch-punch.js" %}"></script>
+    <script src="{% static " js/jquery.ui.touch-punch.js " %}"></script>
 
-<script src="{% static "js/modernizr.js" %}"></script>
+    <script src="{% static " js/modernizr.js " %}"></script>
 
-<script src="{% static "js/bootstrap.min.js" %}"></script>
+    <script src="{% static " js/bootstrap.min.js " %}"></script>
 
-<script src="{% static "js/jquery.cookie.js" %}"></script>
+    <script src="{% static " js/jquery.cookie.js " %}"></script>
 
-<script src='{% static "js/fullcalendar.min.js" %}'></script>
+    <script src='{% static "js/fullcalendar.min.js" %}'></script>
 
-<script src='{% static "js/jquery.dataTables.min.js" %}'></script>
-<script src="{% static "js/excanvas.js" %}"></script>
-<script src="{% static "js/jquery.flot.js" %}"></script>
-<script src="{% static "js/jquery.flot.pie.js" %}"></script>
-<script src="{% static "js/jquery.flot.stack.js" %}"></script>
-<script src="{% static "js/jquery.flot.resize.min.js" %}"></script>
+    <script src='{% static "js/jquery.dataTables.min.js" %}'></script>
+    <script src="{% static " js/excanvas.js " %}"></script>
+    <script src="{% static " js/jquery.flot.js " %}"></script>
+    <script src="{% static " js/jquery.flot.pie.js " %}"></script>
+    <script src="{% static " js/jquery.flot.stack.js " %}"></script>
+    <script src="{% static " js/jquery.flot.resize.min.js " %}"></script>
 
-<script src="{% static "js/jquery.chosen.min.js" %}"></script>
+    <script src="{% static " js/jquery.chosen.min.js " %}"></script>
 
-<script src="{% static "js/jquery.uniform.min.js" %}"></script>
+    <script src="{% static " js/jquery.uniform.min.js " %}"></script>
 
-<script src="{% static "js/jquery.cleditor.min.js" %}"></script>
+    <script src="{% static " js/jquery.cleditor.min.js " %}"></script>
 
-<script src="{% static "js/jquery.noty.js" %}"></script>
+    <script src="{% static " js/jquery.noty.js " %}"></script>
 
-<script src="{% static "js/jquery.elfinder.min.js" %}"></script>
+    <script src="{% static " js/jquery.elfinder.min.js " %}"></script>
 
-<script src="{% static "js/jquery.raty.min.js" %}"></script>
+    <script src="{% static " js/jquery.raty.min.js " %}"></script>
 
-<script src="{% static "js/jquery.iphone.toggle.js" %}"></script>
+    <script src="{% static " js/jquery.iphone.toggle.js " %}"></script>
 
-<script src="{% static "js/jquery.uploadify-3.1.min.js" %}"></script>
+    <script src="{% static " js/jquery.uploadify-3.1.min.js " %}"></script>
 
-<script src="{% static "js/jquery.gritter.min.js" %}"></script>
+    <script src="{% static " js/jquery.gritter.min.js " %}"></script>
 
-<script src="{% static "js/jquery.imagesloaded.js" %}"></script>
+    <script src="{% static " js/jquery.imagesloaded.js " %}"></script>
 
-<script src="{% static "js/jquery.masonry.min.js" %}"></script>
+    <script src="{% static " js/jquery.masonry.min.js " %}"></script>
 
-<script src="{% static "js/jquery.knob.modified.js" %}"></script>
+    <script src="{% static " js/jquery.knob.modified.js " %}"></script>
 
-<script src="{% static "js/jquery.sparkline.min.js" %}"></script>
+    <script src="{% static " js/jquery.sparkline.min.js " %}"></script>
 
-<script src="{% static "js/counter.js" %}"></script>
-<script src="{% static "js/retina.js" %}"></script>
-<script src="{% static "js/custom.js" %}"></script>
-<!-- end: JavaScript-->
-{% autoescape off %}
-    {{ body_script }}
-{% endautoescape %}
-{% autoescape off %}
-    {{ body_style }}
-{% endautoescape %}
+    <script src="{% static " js/counter.js " %}"></script>
+    <script src="{% static " js/retina.js " %}"></script>
+    <script src="{% static " js/custom.js " %}"></script>
+    <!-- end: JavaScript-->
+    {% autoescape off %} {{ body_script }} {% endautoescape %} {% autoescape off %} {{ body_style }} {% endautoescape %}
 
 </body>
+
 </html>

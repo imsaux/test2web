@@ -1,0 +1,40 @@
+<div class="row-fluid sortable">
+    <div class="box span12">
+        <div class="box-header" data-original-title>
+            <h2>
+                <i class="halflings-icon white edit"></i>
+                <span class="break"></span>{{ title }}</h2>
+            <div class="box-icon">
+                <a href="#" class="btn-minimize">
+                    <i class="halflings-icon white chevron-up"></i>
+                </a>
+            </div>
+        </div>
+        <div class="box-content">
+            <div class="box-content">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>问题及处理</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if item %}
+                        <tr>
+                            {% autoescape off %}
+                            <td>{{ item }}</td>
+                            {% endautoescape %}
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td>无</td>
+                        </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- content -->
+</div>

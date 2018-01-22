@@ -12,51 +12,11 @@
         </div>
         <div class="box-content">
             <div class="box-content">
-                {#                 <table class="table table-striped table-bordered bootstrap-datatable datatable">#}
-                {#                    <thead>#}
-                {#                    <tr>#}
-                {#                        <th>车站</th>#}
-                {#                        <th>过车数量</th>#}
-                {#                        <th>报警数</th>#}
-                {#                        <th>问题及处理</th>#}
-                {#                        <th>问题追踪</th>#}
-                {#                    </tr>#}
-                {#                    </thead>#}
-                {#                    <tbody>#}
-                {#                    {% if data %}#}
-                {#                        {% for item in data %}#}
-                {#                            <tr>#}
-                {#                                <td>{{ item.0 }}</td>#}
-                {#                                <td class="center">{{ item.1 }}</td>#}
-                {#                                <td class="center">{{ item.2 }}</td>#}
-                {#                                <td class="center">{{ item.3 }}</td>#}
-                {#                                <td class="center">{{ item.4 }}</td>#}
-                {#                            </tr>#}
-                {#                        {% endfor %}#}
-                {#                    {% else %}#}
-                {#                        <tr>#}
-                {#                            <td class="center">无</td>#}
-                {#                            <td class="center"></td>#}
-                {#                            <td class="center"></td>#}
-                {#                            <td class="center"></td>#}
-                {#                            <td class="center"></td>#}
-                {#                        </tr>#}
-                {#                    {% endif %}#}
-                {#                    </tbody>#}
-                {#                </table> #}
+
                 <form class="form-horizontal" enctype="multipart/form-data" action="/daily_save/{{ data.5 }}/"
                       method="post">
                     <fieldset>
                         {% if data %}
-{#                            <div class="control-group">#}
-{#                                <label class="control-label" for="site">车站</label>#}
-{#                                <div class="controls">#}
-{#                                    <input id="site" class="input-xlarge focused" value="{{ data.site }}" type="text"#}
-{#                                           name="site">#}
-{##}
-{#                                </div>#}
-{#                            </div>#}
-
                             <div class="control-group">
                                 <label class="control-label" for="carriages">过车数</label>
                                 <div class="controls">
@@ -82,14 +42,14 @@
                         <div class="control-group hidden-phone">
                             <label class="control-label" for="tr_1">问题及处理</label>
                             <div class="controls">
-                                <textarea class="cleditor" id="tr_1" rows="2" name="qa">{{ data.3 }}</textarea>
+                                <textarea class="cleditor" id="tr_1" rows="0" name="qa">{{ data.3 }}</textarea>
                             </div>
                         </div>
 
                         <div class="control-group hidden-phone">
                             <label class="control-label" for="tr_2">问题追踪</label>
                             <div class="controls">
-                                <textarea class="cleditor" id="tr_2" rows="2" name="track">{{ data.4 }}</textarea>
+                                <textarea class="cleditor" id="tr_2" rows="0" name="track">{{ data.4 }}</textarea>
                             </div>
                         </div>
 

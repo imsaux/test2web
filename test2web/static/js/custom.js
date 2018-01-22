@@ -384,7 +384,7 @@ function template_functions(){
 			"sDom": "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span12'i><'span12 center'p>>",
 			"sPaginationType": "bootstrap",
 			"oLanguage": {
-			"sLengthMenu": "_MENU_ records per page"
+			"sLengthMenu": "每页 _MENU_ 条记录"
 			}
 		} );
 	$('.btn-close').click(function(e){
@@ -2012,9 +2012,13 @@ $.extend( $.fn.dataTableExt.oPagination, {
 			};
 
 			$(nPaging).addClass('pagination').append(
+				// '<ul>'+
+				// 	'<li class="prev disabled"><a href="#">&larr; '+oLang.sPrevious+'</a></li>'+
+				// 	'<li class="next disabled"><a href="#">'+oLang.sNext+' &rarr; </a></li>'+
+				// '</ul>'
 				'<ul>'+
-					'<li class="prev disabled"><a href="#">&larr; '+oLang.sPrevious+'</a></li>'+
-					'<li class="next disabled"><a href="#">'+oLang.sNext+' &rarr; </a></li>'+
+					'<li class="prev disabled"><a href="#">上一页</a></li>'+
+					'<li class="next disabled"><a href="#">下一页</a></li>'+
 				'</ul>'
 			);
 			var els = $('a', nPaging);
