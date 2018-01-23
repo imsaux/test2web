@@ -111,7 +111,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
-
+LGOIN_URL = '/login/'
 USE_I18N = True
 
 USE_L10N = True

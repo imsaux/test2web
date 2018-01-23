@@ -25,7 +25,7 @@
                     </tr>
                     </thead>
                     <tbody>
-                    {% if data %}
+                    {% if data is not None %}
                         {% for item in data %}
                             <tr> 
                                 <td>{{ item.0 }}</td>
@@ -53,20 +53,12 @@
                                     <a class="btn btn-info" href="/daily_edit/{{ item.5 }}">
                                         <i class="halflings-icon white edit"></i>
                                     </a>
-                                    {#									<a class="btn btn-danger" href="/daily_delete/{{ item.5 }}">#}
-                                    {#										<i class="halflings-icon white trash"></i>#}
-                                    {##}
-                                    {#									</a>#}
                                 </td>
                             </tr>
                         {% endfor %}
                     {% else %}
                         <tr>
-                            <td class="center">无</td>
-                            <td class="center"></td>
-                            <td class="center"></td>
-                            <td class="center"></td>
-                            <td class="center"></td>
+                            <td class="center" colspan="7">无</td>
                         </tr>
                     {% endif %}
                     </tbody>

@@ -307,6 +307,7 @@ def _get_daily_data(date=datetime.datetime.now()):
     # 列出站点
     _data_sites = models.ClientWarning.objects.filter(
         datetime__range=(_range_from, _range_to))
+    _data_daily = models.DailyReport.objects.filter(date=_range_to.date())
     if len(_data_sites) > 0:
         _sites = [x['site'] for x in _data_sites.values('site').distinct()]
         for _site in _sites:    # 遍历每个站点信息
@@ -373,14 +374,62 @@ def _get_daily_data(date=datetime.datetime.now()):
             _return.append([_site, carriages_count, warning_str, report_qa,
                             report_track, _data_info.id, _data_info.status])
         return _return
+    elif len(_data_daily) > 0:
+        for site in _data_daily:
+            _return.append([site.site, site.carriages, site.warning, str(site.qa, encoding='utf-8'), str(site.track, encoding='utf-8'), site.id, site.status])
+        return _return
     else:
-        # 没有站点表示当天没有任何数据
-        return None
+        _sites = [x.name for x in models.Site.objects.all()]
+        for site in _sites:
+
+            _new = models.DailyReport(
+                site=site,
+                date=_range_to.date(),
+                carriages=0,
+                warning='无',
+                qa='无'.encode(),
+                track='无'.encode(),
+            )
+            _new.save()
+            _data_info = models.DailyReport.objects.get(
+                site=site, date=_range_to.date())
+            carriages_count = _data_info.carriages
+            warning_str = _data_info.warning
+            report_qa = str(_data_info.qa, encoding='utf-8')
+            report_track = str(_data_info.track, encoding='utf-8')
+            _return.append([site, carriages_count, warning_str, report_qa,
+                                        report_track, _data_info.id, _data_info.status])
+        return _return
+
+
+def daily_search(request):
+    _range_from, _range_to = _get_range_date(datetime.datetime.now())
+
+    _site = request.POST['r_site']
+    _date = datetime.datetime.strptime(request.POST['r_date'], '%m/%d/%Y')
+    _data = models.DailyReport.objects.get(site=_site, date=_date)
+    return render_to_response(
+        'base.html',
+        {
+            'box_content': _redirect(
+                'daily_view',
+                {
+                    'title': _datetime_format(date=_range_to),
+                    'data': [[_site, _data.carriages, _data.warning, str(_data.qa, encoding='utf-8'), str(_data.track, encoding='utf-8'), _data.id]],
+                }
+            ),
+            'user': request.user,
+        }
+    )
+
 
 
 def daily_view(request):
     _range_from, _range_to = _get_range_date(datetime.datetime.now())
+    _data_sites = models.ClientWarning.objects.filter(
+        datetime__range=(_range_from, _range_to))
 
+    _sites = [x['site'] for x in _data_sites.values('site').distinct()]
     public_reports = models.DailyReport.objects.filter(
         date=_range_to, status=True)
     _return = list()
@@ -391,22 +440,28 @@ def daily_view(request):
         _qa = str(site.qa, encoding='utf-8')
         _track = str(site.track, encoding='utf-8')
         _return.append([_site, _carriages, _warning, _qa, _track, site.id])
+    if len(_return) == 0:
+        _return = None
     return render_to_response(
         'base.html',
         {
             'box_content': _redirect(
                 'daily_view',
                 {
-                    'title': _datetime_format(),
+                    'title': _datetime_format(date=_range_to),
                     'data': _return,
+                    'all_site': _sites,
+                    'date_now': _datetime_format(mode=3),
                 }
             ),
             'user': request.user,
         }
     )
 
-
+@login_required
 def daily_manage(request, _date=datetime.datetime.now()):
+    _range_from, _range_to = _get_range_date(datetime.datetime.now())
+
     all_data = _get_daily_data(date=_date)
     return render_to_response(
         'base.html',
@@ -414,7 +469,7 @@ def daily_manage(request, _date=datetime.datetime.now()):
             'box_content': _redirect(
                 'daily_manage',
                 {
-                    'title': _datetime_format(),
+                    'title': _datetime_format(date=_range_to),
                     'data': all_data,
                 }
             ),
@@ -466,7 +521,9 @@ def daily_save(request, _id):
 
 def daily_detail(request, _id, _mode):
     _data_info = models.DailyReport.objects.get(id=_id)
-    _title = _datetime_format(_get_range_date(datetime.datetime.now())[1])
+    _range_from, _range_to = _get_range_date(datetime.datetime.now())
+
+    _title = _datetime_format(date=_range_to)
     _r = None
     if _mode == '0':
         _r = str(_data_info.qa, encoding='utf-8')

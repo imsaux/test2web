@@ -30,6 +30,7 @@ urlpatterns = [
                   url(r'^add_data/$', import_data, name='import_data'),
                   url(r'^daily_view/$', daily_view, name='daily_view'), # 展示
                   url(r'^daily_manage/$', daily_manage, name='daily_manage'), # 展示
+                  url(r'^daily_search/$', daily_search, name='daily_search'), # 展示
 
                   url(r'^daily_edit/(.*)/$', daily_edit, name='daily_edit'),
                   url(r'^daily_save/(.*)/$', daily_save, name='daily_save'),
@@ -40,7 +41,11 @@ urlpatterns = [
                 #   url(r'^search_warning/(.*)/$', search_warning, name='search_warning'),
                 #   url(r'^detail/(.*)/(.*)/(.*)/(.*)/(.*)/(.*)/$', warning_detail, name='warning_detail'),
                   url(r'^admin/', admin.site.urls, name='admin'),
-                  url(r'^$', login),
+                #   url(r'^$', login),
+                  url(r'^$', 'django.contrib.auth.views.login'),
+                #   url(r'^accounts/login/$', login),
+                url(r'^accounts/login/$', 'django.contrib.auth.views.login'),
+
                   url(r'^register/$', register),
                   url(r'^login/', login, name='login'),
                   url(r'^logout/$', logout, name='logout'),
