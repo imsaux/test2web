@@ -24,7 +24,7 @@ SECRET_KEY = '9@e#(6ak__=$dsxc@7oeg^ih^o26i69*-f=%8q2m&qv2et#m-x'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 TEMPLATE_DIRS = (os.path.join(BASE_DIR, 'test2web', 'html'),)
 
