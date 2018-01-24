@@ -20,6 +20,7 @@
                         <th>报警数</th>
                         <th>问题及处理</th>
                         <th>问题追踪</th>
+                        <th>图片</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -29,8 +30,9 @@
                                 <td>{{ item.0 }}</td>
                                 <td class="center">{{ item.1 }}</td>
                                 <td class="center">{{ item.2 }}</td>
-                                <td class="center"><a href='/daily_detail_qa/{{ item.5 }}/0'>详细</a></td>
-                                <td class="center"><a href='/daily_detail_track/{{ item.5 }}/1'>详细</a></td>
+                                <td class="center">{{ item.3 }}</td>
+                                <td class="center">{{ item.4 }}</td>
+                                <td class="center"><a href='/daily_detail_img/{{ item.6 }}'>详细</a></td>
                             </tr>
                         {% endfor %}
                     {% else %}

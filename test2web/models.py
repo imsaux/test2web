@@ -22,6 +22,8 @@ class Algo(models.Model):
 
 class Site(models.Model):
     name = models.CharField(max_length=255)
+    order = models.IntegerField(blank=True)
+    code = models.CharField(max_length=255, blank=True)
 
 class Kind(models.Model):
     name = models.CharField(max_length=255)
@@ -70,6 +72,8 @@ class DailyReport(models.Model):
     site = models.CharField(max_length=255, blank=True)
     warning = models.CharField(max_length=255, blank=True)
     carriages = models.IntegerField(default=0)
-    qa = models.BinaryField(blank=True)   # 备注
-    track = models.BinaryField(blank=True)   # 问题追踪
+    qa = models.TextField(blank=True)   # 备注
+    track = models.TextField(blank=True)   # 问题追踪
+    imgs = models.BinaryField(blank=True)
+    orderby = models.IntegerField(blank=True, default=0)
     status = models.BooleanField(default=False)   # 审批状态
