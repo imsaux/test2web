@@ -86,18 +86,18 @@
                     </li>
 
                     {% if user.is_authenticated %} {% if user.is_staff %}
-                        {#                        <li>#}
-                        {#                            <a href="/warning">#}
-                        {#                                <i class="icon-envelope"></i>#}
-                        {#                                <span class="hidden-tablet"> 报警录入</span>#}
-                        {#                            </a>#}
-                        {#                        </li>#}
-                        {#                        <li>#}
-                        {#                            <a href="/info">#}
-                        {#                                <i class="icon-envelope"></i>#}
-                        {#                                <span class="hidden-tablet"> 运况录入</span>#}
-                        {#                            </a>#}
-                        {#                        </li>#}
+                        <li>
+                            <a href="/warning">
+                                <i class="icon-envelope"></i>
+                                <span class="hidden-tablet"> 报警录入</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/info">
+                                <i class="icon-envelope"></i>
+                                <span class="hidden-tablet"> 运况录入</span>
+                            </a>
+                        </li>
                         <li>
                             <a href="/daily_manage">
                                 <i class="icon-envelope"></i>
@@ -107,10 +107,10 @@
 
                     {% endif %}
                         <li>
-{#                            <a href="/stat">#}
-{#                                <i class="icon-tasks"></i>#}
-{#                                <span class="hidden-tablet"> 统计分析</span>#}
-{#                            </a>#}
+                            <a href="/stat">
+                                <i class="icon-tasks"></i>
+                                <span class="hidden-tablet"> 统计分析</span>
+                            </a>
 {#                            {% if user.is_superuser %}#}
 {#                                <li>#}
 {#                                    <a href="/dict">#}

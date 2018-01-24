@@ -12,6 +12,7 @@ from django.contrib import auth
 from django.utils.decorators import method_decorator
 from django.db.models import Max, Min, Sum
 import datetime
+import locale
 
 
 # 定义表单模型
@@ -95,19 +96,19 @@ def warning_page(request):
 
 
 def stat_page(request):
-    return get_data(request)
+    _select_site = [x.name for x in models.Site.objects.all()]
+    return get_data(request, _site=_select_site[0])
 
 
 def get_data(request, _site=None, _date=None):
-    # locale.setlocale(locale.LC_CTYPE, 'chinese')
+    locale.setlocale(locale.LC_CTYPE, 'chinese')
     data = list()
+    _select_site = [x.name for x in models.Site.objects.all()]
     if _date is None:
         _date = datetime.datetime.now(tz=timezone(timedelta(hours=8)))
-    all_warning = models.Warning.objects.filter(site=models.Site.objects.get(name=_site), date__year=_date.year,
-                                                date__month=_date.month, date__day=_date.day).order_by('algo__pid')
     try:
         all_info = models.Info.objects.filter(
-            site=models.Site.objects.get(name=_site), date=_date)
+            site=models.Site.objects.get(name=_site), datetime=_date.date())
         _info = [
             all_info.last().sx_h_lie,
             all_info.last().sx_h_liang,
@@ -120,50 +121,57 @@ def get_data(request, _site=None, _date=None):
         ]
     except Exception as e:
         _info = [0] * 8
-    P_algo = sorted(
-        set([y[0]['pid'] for y in [x.algo.all().values('pid') for x in all_warning]]))
-    _current_parent_algo = None
-    _select_site = [x.name for x in models.Site.objects.all()]
-    _index = 1
-    for _p in P_algo:
-        this_p_algo = all_warning.filter(algo__pid=_p)
-        _algo = set([y[0]['id'] for y in [x.algo.all().values('id')
-                                          for x in this_p_algo]])
-        this_p_algo_count = len(_algo)
-        for _a in _algo:
-            _this = list()
-            this_algo = all_warning.filter(algo=_a)
-            this_algo_obj = models.Algo.objects.get(id=_a)
-            this_algo_obj_name = this_algo_obj.name
-            this_algo_parent_obj = models.Algo.objects.get(
-                id=this_algo_obj.pid)
-            this_algo_parent_obj_name = this_algo_parent_obj.name
-            if _current_parent_algo is None or _current_parent_algo != this_algo_parent_obj_name:
-                _this.append(str(this_p_algo_count))
-                _this.append(this_algo_parent_obj_name)
-                _current_parent_algo = this_algo_parent_obj_name
-            else:
-                _this.append('')
-                _this.append('')
-            _this.append(this_algo_obj_name)
-            line_1_real = len(this_algo.filter(line='上行', warning_type='真实'))
-            line_2_real = len(this_algo.filter(line='下行', warning_type='真实'))
-            line_1_err = len(this_algo.filter(line='上行', warning_type='误报'))
-            line_2_err = len(this_algo.filter(line='下行', warning_type='误报'))
-            line_1_miss = len(this_algo.filter(line='上行', warning_type='漏报'))
-            line_2_miss = len(this_algo.filter(line='下行', warning_type='漏报'))
-            line_1_total = line_1_real + line_1_err
-            line_2_total = line_2_real + line_2_err
-            _this.append(line_1_total)
-            _this.append(line_1_real)
-            _this.append(line_1_err)
-            _this.append(line_1_miss)
-            _this.append(line_2_total)
-            _this.append(line_2_real)
-            _this.append(line_2_err)
-            _this.append(line_2_miss)
-            data.append(_this)
-            _index += 1
+    try:
+        all_warning = models.Warning.objects.filter(site=models.Site.objects.get(name=_site), date__year=_date.year,
+                                                date__month=_date.month, date__day=_date.day).order_by('algo__pid')
+
+        P_algo = sorted(
+            set([y[0]['pid'] for y in [x.algo.all().values('pid') for x in all_warning]]))
+        _current_parent_algo = None
+        _index = 1
+        for _p in P_algo:
+            this_p_algo = all_warning.filter(algo__pid=_p)
+            _algo = set([y[0]['id'] for y in [x.algo.all().values('id')
+                                              for x in this_p_algo]])
+            this_p_algo_count = len(_algo)
+            for _a in _algo:
+                _this = list()
+                this_algo = all_warning.filter(algo=_a)
+                this_algo_obj = models.Algo.objects.get(id=_a)
+                this_algo_obj_name = this_algo_obj.name
+                this_algo_parent_obj = models.Algo.objects.get(
+                    id=this_algo_obj.pid)
+                this_algo_parent_obj_name = this_algo_parent_obj.name
+                if _current_parent_algo is None or _current_parent_algo != this_algo_parent_obj_name:
+                    _this.append(str(this_p_algo_count))
+                    _this.append(this_algo_parent_obj_name)
+                    _current_parent_algo = this_algo_parent_obj_name
+                else:
+                    _this.append('')
+                    _this.append('')
+                _this.append(this_algo_obj_name)
+                line_1_real = len(this_algo.filter(line='上行', warning_type='真实'))
+                line_2_real = len(this_algo.filter(line='下行', warning_type='真实'))
+                line_1_err = len(this_algo.filter(line='上行', warning_type='误报'))
+                line_2_err = len(this_algo.filter(line='下行', warning_type='误报'))
+                line_1_miss = len(this_algo.filter(line='上行', warning_type='漏报'))
+                line_2_miss = len(this_algo.filter(line='下行', warning_type='漏报'))
+                line_1_total = line_1_real + line_1_err
+                line_2_total = line_2_real + line_2_err
+                _this.append(line_1_total)
+                _this.append(line_1_real)
+                _this.append(line_1_err)
+                _this.append(line_1_miss)
+                _this.append(line_2_total)
+                _this.append(line_2_real)
+                _this.append(line_2_err)
+                _this.append(line_2_miss)
+                data.append(_this)
+                _index += 1
+
+    except Exception as e:
+        pass
+
     _js = r"""<script src="/static/js/my/stat.js"></script>"""
     _css = r"""<link href="/static/css/my/dict.css" rel="stylesheet">"""
     _rMenu = r"""<div id="rMenu"><img src="/static/img/gallery/photo2.jpg" /></div>"""
@@ -241,15 +249,6 @@ def info_page(request):
             'user': request.user,
         }
     )
-
-    _set = [x.name for x in models.Algo.objects.exclude(pid=0)]
-    return render_to_response(
-        'add_warning.html',
-        {
-            'algo_type': _set,
-        }
-    )
-
 
 def import_data(request):
     # 接收4G站点数据
@@ -583,7 +582,7 @@ def _get_range_date(date, _startwith=8):
     return _start_date, _end_date
 
 
-def warning_detail(request, _date, _site, _algo, _line, _err_type, _user):
+def warning_detail(request, _date, _site, _algo, _line, _err_type):
     _date = datetime.datetime.strptime(_date, '%Y年%m月%d日')
     all_warning = models.Warning.objects.filter(
         warning_type=_err_type,
@@ -595,7 +594,7 @@ def warning_detail(request, _date, _site, _algo, _line, _err_type, _user):
     data = list()
     for w in all_warning:
         _this = list()
-        _this.append(w.date.strftime('%Y年%m月%d日'))
+        _this.append(_datetime_format(date=w.date))
         _this.append(w.site.name)
         _this.append(w.line)
         _this.append(w.kind.name)
@@ -616,18 +615,19 @@ def warning_detail(request, _date, _site, _algo, _line, _err_type, _user):
                     'detail_data': data,
                 }
             ),
+            'user': request.user,
         }
     )
 
 
-def search_warning(request, _user):
+def search_warning(request):
     _date = request.POST['r_date']
     _to_date = datetime.datetime.strptime(_date, '%m/%d/%Y')
     _site = request.POST['r_site']
     return get_data(request, _site, _to_date)
 
 
-def add_info(request, _user):
+def add_info(request):
     _date = datetime.datetime.strptime(request.POST['r_date'], '%m/%d/%Y')
     _site = models.Site.objects.get(name=request.POST['r_site'])
     _sx_h_lie = int(request.POST['sx_h_lie']
@@ -647,7 +647,7 @@ def add_info(request, _user):
     _xx_k_liang = int(request.POST['xx_k_liang']
                       ) if request.POST['xx_k_liang'] != '' else 0
     _new = models.Info(
-        date=_date,
+        datetime=_date,
         site=_site,
         sx_h_liang=_sx_h_liang,
         sx_h_lie=_sx_h_lie,
@@ -659,10 +659,10 @@ def add_info(request, _user):
         xx_k_lie=_xx_k_lie,
     )
     _new.save()
-    return info_page(request, _user)
+    return stat_page(request)
 
 
-def add_warning(request, _user):
+def add_warning(request):
     # if request.Method == 'POST':
     _date = request.POST['r_date']
     _to_date = datetime.datetime.strptime(_date, '%m/%d/%Y')

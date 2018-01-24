@@ -20,13 +20,15 @@ from test2web.page import *
 from django.contrib import admin
 
 urlpatterns = [
-                #   url(r'^warning/(.*)/$', warning_page, name='warning'),
-                #   url(r'^stat/(.*)/$', stat_page, name='stat'),
-                #   url(r'^dict/(.*)/$', dict_page, name='dict'),
-                #   url(r'^info/(.*)/$', info_page, name='info'),
+                  url(r'^warning/$', warning_page, name='warning'),
+                  url(r'^stat/$', stat_page, name='stat'),
+                  url(r'^dict/$', dict_page, name='dict'),
+                  url(r'^info/$', info_page, name='info'),
                   url(r'^init/$', init, name='init'),
-                #   url(r'^add_warning/(.*)/$', add_warning, name='add_warning'),
-                #   url(r'^add_info/(.*)/$', add_info, name='add_info'),
+                  url(r'^warning_detail/(.*)/(.*)/(.*)/(.*)/(.*)/$', warning_detail, name='warning_detail'),
+                  url(r'^add_warning/$', add_warning, name='add_warning'),
+                  url(r'^search_warning/$', search_warning, name='search_warning'),
+                  url(r'^add_info/$', add_info, name='add_info'),
                   url(r'^add_data/$', import_data, name='import_data'),
                   url(r'^daily_view/$', daily_view, name='daily_view'), # 展示
                   url(r'^daily_manage/$', daily_manage, name='daily_manage'), # 展示
@@ -49,3 +51,4 @@ urlpatterns = [
               ]
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 urlpatterns += static(settings.UPLOAD_URL, document_root=settings.UPLOAD_ROOT)
+

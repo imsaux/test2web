@@ -45,23 +45,23 @@
                         <td class="center">{{ d.3 }}</td>
 
                         <td class="center">
-                            {% if d.4 == 0 %}{{ d.4 }}{% else %}<a href="/detail/{{ data_date }}/{{ current_site }}/{{ d.2 }}/上行/真实/{{ user }}/">
+                            {% if d.4 == 0 %}{{ d.4 }}{% else %}<a href="/warning_detail/{{ data_date }}/{{ current_site }}/{{ d.2 }}/上行/真实/">
                                 {{ d.4 }}{% endif %}</a></td>
                         <td class="center">
-                            {% if d.5 == 0 %}{{ d.5 }}{% else %}<a href="/detail/{{ data_date }}/{{ current_site }}/{{ d.2 }}/上行/误报/{{ user }}/">
+                            {% if d.5 == 0 %}{{ d.5 }}{% else %}<a href="/warning_detail/{{ data_date }}/{{ current_site }}/{{ d.2 }}/上行/误报/">
                                 {{ d.5 }}{% endif %}</a></td>
                         <td class="center">
-                            {% if d.6 == 0 %}{{ d.6 }}{% else %}<a href="/detail/{{ data_date }}/{{ current_site }}/{{ d.2 }}/上行/漏报/{{ user }}/">
+                            {% if d.6 == 0 %}{{ d.6 }}{% else %}<a href="/warning_detail/{{ data_date }}/{{ current_site }}/{{ d.2 }}/上行/漏报/">
                                 {{ d.6 }}{% endif %}</a></td>
                         <td class="center">{{ d.7 }}</td>
                         <td class="center">
-                            {% if d.8 == 0 %}{{ d.8 }}{% else %}<a href="/detail/{{ data_date }}/{{ current_site }}/{{ d.2 }}/下行/真实/{{ user }}/">
+                            {% if d.8 == 0 %}{{ d.8 }}{% else %}<a href="/warning_detail/{{ data_date }}/{{ current_site }}/{{ d.2 }}/下行/真实/">
                                 {{ d.8 }}{% endif %}</a></td>
                         <td class="center">
-                            {% if d.9 == 0 %}{{ d.9 }}{% else %}<a href="/detail/{{ data_date }}/{{ current_site }}/{{ d.2 }}/下行/误报/{{ user }}/">
+                            {% if d.9 == 0 %}{{ d.9 }}{% else %}<a href="/warning_detail/{{ data_date }}/{{ current_site }}/{{ d.2 }}/下行/误报/">
                                 {{ d.9 }}{% endif %}</a></td>
                         <td class="center">
-                            {% if d.10 == 0 %}{{ d.10 }}{% else %}<a href="/detail/{{ data_date }}/{{ current_site }}/{{ d.2 }}/下行/漏报/{{ user }}/">
+                            {% if d.10 == 0 %}{{ d.10 }}{% else %}<a href="/warning_detail/{{ data_date }}/{{ current_site }}/{{ d.2 }}/下行/漏报/">
                                 {{ d.10 }}{% endif %}</a></td>
                     </tr>
                 {% endfor %}
@@ -80,7 +80,7 @@
             </div>
         </div>
         <div class="box-content">
-            <form class="form-horizontal" enctype="multipart/form-data" action="/search_warning/{{ user }}/" method="post">
+            <form class="form-horizontal" enctype="multipart/form-data" action="/search_warning/" method="post">
                 <fieldset>
                     <div class="control-group">
                         <label class="control-label" for="selectErrorSite">站点</label>
