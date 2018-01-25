@@ -13,7 +13,7 @@ https://docs.djangoproject.com/en/dev/ref/settings/
 import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/dev/howto/deployment/checklist/
@@ -26,7 +26,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
-TEMPLATE_DIRS = (os.path.join(BASE_DIR, 'test2web', 'html'),)
+TEMPLATE_DIRS = (os.path.join(BASE_DIR, 'html'),)
 
 # Application definition
 
@@ -110,7 +110,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # https://docs.djangoproject.com/en/dev/topics/i18n/
 
 LANGUAGE_CODE = 'en-us'
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Shanghai'
 LGOIN_URL = '/login/'
 USE_I18N = True
 
@@ -122,6 +122,6 @@ LOGIN_REDIRECT_URL = '/stat/'
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/dev/howto/static-files/
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'test2web', 'static')
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 UPLOAD_URL = '/upload/'
 UPLOAD_ROOT = os.path.join(BASE_DIR, 'upload').replace("\\", "/")

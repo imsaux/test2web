@@ -105,7 +105,7 @@ def get_data(request, _site=None, _date=None):
     data = list()
     _select_site = [x.name for x in models.Site.objects.all()]
     if _date is None:
-        _date = datetime.datetime.now(tz=timezone(timedelta(hours=8)))
+        _date = datetime.datetime.now()
     try:
         all_info = models.Info.objects.filter(
             site=models.Site.objects.get(name=_site), datetime=_date.date())
@@ -297,7 +297,8 @@ def _datetime_format(date=datetime.datetime.now(), mode=1):
         return str(date.year) + '年' + str(date.month) + '月' + str(date.day) + '日 ' + str(date.hour).zfill(2) + ':' + str(date.minute).zfill(2) + ':' + str(date.second).zfill(2)
 
 
-def _get_daily_data(date=datetime.datetime.now()):
+def _get_daily_data(date=datetime.datetime.now(tz=timezone(
+        timedelta(hours=8)))):
     _return = list()
 
     # 日期输入合法性检查
@@ -306,7 +307,7 @@ def _get_daily_data(date=datetime.datetime.now()):
     # 列出站点
     _data_sites = models.ClientWarning.objects.filter(
         datetime__range=(_range_from, _range_to))
-    _data_daily = models.DailyReport.objects.filter(date__range=(_range_from, _range_to))
+    _data_daily = models.DailyReport.objects.filter(date=_range_to.date())
     _sites_data = [x.code for x in models.Site.objects.all().order_by('order')]
     _sites_clientwarning = [x['site'] for x in _data_sites.values('site').distinct()]
     _sitenames_dailyreport = [x['site'] for x in _data_daily.values('site').distinct()]
@@ -315,8 +316,7 @@ def _get_daily_data(date=datetime.datetime.now()):
         _rank = models.Site.objects.get(code=site).order
         _site_name = models.Site.objects.get(code=site).name  # 站名
         if _site_name in _sitenames_dailyreport: # 有日报表数据
-            _data_info = models.DailyReport.objects.get(
-                site=_site_name, date=_range_to.date())
+            _data_info = models.DailyReport.objects.filter(site=_site_name, date__range=(_range_from, _range_to)).last()
             carriages = _data_info.carriages
             warning = _data_info.warning
             qa = _data_info.qa
@@ -404,11 +404,26 @@ def _get_daily_data(date=datetime.datetime.now()):
 
 
 def daily_search(request):
+    _r = list()
     _site = request.POST['r_site']
     _date = datetime.datetime.strptime(request.POST['r_date'], '%m/%d/%Y')
-    _data = models.DailyReport.objects.filter(site=_site, date=_date, status=True).last()
-    _sites = [x.name for x in models.Site.objects.all()]
-    _r = [[_site, _data.carriages, _data.warning, _data.qa, _data.track, str(_data.imgs, encoding='utf8'), _data.id]] if _data is not None else None
+    if _site == '全部':
+        _data = models.DailyReport.objects.filter(date=_date, status=True)
+        for site in _data:
+            _r.append([site.site, site.carriages, site.warning, site.qa, site.track, str(site.imgs, encoding='utf8'),
+                       site.id])
+        if len(_data) == 0:
+            _r = None
+
+    else:
+        _data = models.DailyReport.objects.filter(site=_site, date=_date, status=True).last()
+        if _data is not None:
+            _r = [[_data.site, _data.carriages, _data.warning, _data.qa, _data.track, str(_data.imgs, encoding='utf8'),
+                  _data.id],]
+        else:
+            _r = None
+    _sites = ['全部'] + [x.name for x in models.Site.objects.all()]
+
     return render_to_response(
         'base.html',
         {
@@ -428,8 +443,9 @@ def daily_search(request):
 
 
 def daily_view(request):
-    _range_from, _range_to = _get_range_date(datetime.datetime.now())
-    _sites = [x.name for x in models.Site.objects.all()]
+    _range_from, _range_to = _get_range_date(datetime.datetime.now(tz=timezone(
+        timedelta(hours=8))))
+    _sites = ['全部'] + [x.name for x in models.Site.objects.all()]
     public_reports = models.DailyReport.objects.filter(
         date=_range_to, status=True).order_by('orderby')
     _return = list()
@@ -461,7 +477,7 @@ def daily_view(request):
 
 @login_required
 def daily_manage(request, _date=datetime.datetime.now()):
-    _range_from, _range_to = _get_range_date(datetime.datetime.now())
+    _range_from, _range_to = _get_range_date(_date)
 
     all_data = _get_daily_data(date=_date)
     return render_to_response(
