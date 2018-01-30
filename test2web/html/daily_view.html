@@ -1,4 +1,4 @@
-<div class="row-fluid sortable">
+<div class="row-fluid">
     <div class="box span12">
         <div class="box-header" data-original-title>
             <h2>
@@ -11,38 +11,36 @@
             </div>
         </div>
         <div class="box-content">
-            <div class="box-content">
-                <table class="table table-striped table-bordered bootstrap-datatable datatable">
-                    <thead>
-                    <tr>
-                        <th>车站</th>
-                        <th>过车数量</th>
-                        <th>报警数</th>
-                        <th>问题及处理</th>
-                        <th>问题追踪</th>
-                        <th>图片</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {% if data != '' %}
-                        {% for item in data %}
-                            <tr>
-                                <td>{{ item.0 }}</td>
-                                <td class="center">{{ item.1 }}</td>
-                                <td class="center">{{ item.2 }}</td>
-                                <td class="center">{{ item.3 }}</td>
-                                <td class="center">{{ item.4 }}</td>
-                                <td class="center"><a href='/daily_detail_img/{{ item.6 }}'>详细</a></td>
-                            </tr>
-                        {% endfor %}
-                    {% else %}
+            <table class="table table-striped table-bordered bootstrap-datatable datatable">
+                <thead>
+                <tr>
+                    <th>车站</th>
+                    <th>过车数量</th>
+                    <th>报警数</th>
+                    <th>问题及处理</th>
+                    <th>问题追踪</th>
+                    <th>图片</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% if data != '' %}
+                    {% for item in data %}
                         <tr>
-                            <td class="center" colspan="5">无</td>
+                            <td>{{ item.0 }}</td>
+                            <td class="center">{{ item.1 }}</td>
+                            <td class="center">{{ item.2 }}</td>
+                            <td class="center">{{ item.3 }}</td>
+                            <td class="center">{{ item.4 }}</td>
+                            <td class="center"><a href='/daily_detail_img/{{ item.6 }}'>详细</a></td>
                         </tr>
-                    {% endif %}
-                    </tbody>
-                </table>
-            </div>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td class="center" colspan="5">无</td>
+                    </tr>
+                {% endif %}
+                </tbody>
+            </table>
         </div>
     </div>
 
@@ -51,7 +49,7 @@
 
 
 
-<div class="row-fluid sortable">
+<div class="row-fluid">
         <div class="box span12">
             <div class="box-header" data-original-title>
                 <h2><i class="halflings-icon white edit"></i><span class="break"></span>查询</h2>
