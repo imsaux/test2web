@@ -15,10 +15,16 @@ import datetime
 import locale
 
 
-# 定义表单模型
+# 登录表单模型
 class UserForm(forms.Form):
-    username = forms.CharField(label='用户名：', max_length=100)
-    password = forms.CharField(label='密码：', widget=forms.PasswordInput())
+    username = forms.CharField(label='用户名', max_length=100)
+    password = forms.CharField(label='密码', widget=forms.PasswordInput())
+
+# 注册表单模型
+class UserRegisterForm(forms.Form):
+    username = forms.CharField(label='用户名', max_length=100)
+    password = forms.CharField(label='密码', widget=forms.PasswordInput())
+    is_staff = forms.BooleanField(label='管理员权限', widget=forms.CheckboxInput())
 
 
 # 登录
@@ -40,25 +46,27 @@ def login(request):
         uf = UserForm()
     return render_to_response('login.html', {'uf': uf})
 
-
+# 注册
 def register(request):
     if request.method == 'POST':
-        uf = UserForm(request.POST)
-        if uf.is_valid():
+        urf = UserRegisterForm(request.POST)
+        if urf.is_valid():
             # 获取表单用户密码
-            username = uf.cleaned_data['username']
-            password = uf.cleaned_data['password']
+            username = urf.cleaned_data['username']
+            password = urf.cleaned_data['password']
+            isstaff = urf.cleaned_data['is_staff']
             try:
                 user = User.objects.create_user(username=username)
                 user.set_password(password)
+                user.is_staff = isstaff
                 user.save()
             except Exception as e:
-                uf = UserForm()
-                return render_to_response('register.html', {'uf': uf})
+                urf = UserRegisterForm()
+                return render_to_response('register.html', {'uf': urf})
             return HttpResponseRedirect('/login/')
     else:
-        uf = UserForm()
-        return render_to_response('register.html', {'uf': uf})
+        urf = UserRegisterForm()
+        return render_to_response('register.html', {'uf': urf})
 
 
 def _redirect(page, params):
