@@ -1475,7 +1475,6 @@ ul.chat li .message .text {
 	-webkit-box-sizing: border-box; /* Safari, Chrome et al  */
 	   -moz-box-sizing: border-box; /* Firefox */
 	        box-sizing: border-box; /* Opera/IE 8+ */	
-	height: 80px;
 	outline: 0px !important;
 	font-size: 12px;
 }

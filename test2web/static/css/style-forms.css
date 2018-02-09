@@ -32,7 +32,6 @@ input[type="file"],
 }
 
 input,
-textarea,
 .uneditable-input {
   width: 206px;
 }
