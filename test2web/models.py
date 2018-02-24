@@ -4,38 +4,28 @@ from django.contrib.auth.admin import User
 # from django.contrib import admin
 
 
-class user_profile(models.Model):
-    user = models.OneToOneField(User, unique=True, verbose_name=('用户'), on_delete=models.CASCADE)
-    phone_number = models.CharField(max_length=255)
-
-class Dict(models.Model):
-    pid = models.IntegerField()
-    name = models.CharField(max_length=100)
-
-class Reason(models.Model):
-    pid = models.IntegerField()
+class Reason(models.Model):  # 问题原因分类
+    pid = models.IntegerField(default=0)
     name = models.CharField(max_length=255)
 
-class Algo(models.Model):
-    pid = models.IntegerField()
+class Site(models.Model):   # 站点
     name = models.CharField(max_length=255)
-
-class Site(models.Model):
-    name = models.CharField(max_length=255)
-    order = models.IntegerField(blank=True)
+    order = models.IntegerField(blank=False)
     code = models.CharField(max_length=255, blank=True)
+    bureau = models.CharField(max_length=255, blank=True)
 
-class Kind(models.Model):
+
+class Warn(models.Model):  # 报警分类
+    pid = models.IntegerField(default=0)
     name = models.CharField(max_length=255)
 
-class Warning(models.Model):
+class Warning(models.Model):  # 
     date = models.DateField()
-    site = models.ForeignKey(Site, on_delete=models.CASCADE)
+    site = models.OneToOneField(Site, on_delete=models.CASCADE)
     side = models.CharField(max_length=255)
     line = models.CharField(max_length=100)
-    kind = models.ForeignKey(Kind, on_delete=models.CASCADE)
-    warning_type = models.CharField(max_length=255)
-    algo = models.ManyToManyField(Algo)
+    warn_type = models.CharField(max_length=255)
+    warn = models.ForeignKey(Warn, on_delete=models.CASCADE)
     reason = models.ManyToManyField(Reason, blank=True)
     pic = models.FileField(upload_to='upload/', blank=True)
 
@@ -53,27 +43,28 @@ class Info(models.Model):
 
 class ClientWarning(models.Model):
     datetime = models.DateTimeField()   # 日期
-    site = models.CharField(max_length=255) # 站点名称
-    algo = models.CharField(max_length=255) # 报警类型
+    site = models.ForeignKey(Site, on_delete=models.CASCADE)
+    warn = models.ForeignKey(Warn, on_delete=models.CASCADE)
     count = models.IntegerField(default=0)    # 数量
-    status = models.BooleanField(default=False)   # 审批状态
 
 class ClientStatus(models.Model):
     datetime = models.DateTimeField()   # 日期
-    site = models.CharField(max_length=255) # 站点名称
+    site = models.ForeignKey(Site, on_delete=models.CASCADE)
     line_1_trains = models.IntegerField(default=0)
     line_2_trains = models.IntegerField(default=0)
     line_1_carriages = models.IntegerField(default=0)
     line_2_carriages = models.IntegerField(default=0)
-    status = models.BooleanField(default=False)   # 审批状态
 
 class DailyReport(models.Model):
     date = models.DateField(default=None, blank=True)
-    site = models.CharField(max_length=255, blank=True)
-    warning = models.CharField(max_length=255, blank=True)
-    carriages = models.IntegerField(default=0)
-    qa = models.TextField(blank=True)   # 备注
-    track = models.TextField(blank=True)   # 问题追踪
+    site = models.ForeignKey(Site, on_delete=models.CASCADE)
+    reason = models.ManyToManyField(Reason, related_name='Reason_dailyreport')
+    warn = models.TextField(default='无')
+    carriages_count = models.IntegerField(default=0)
     imgs = models.BinaryField(blank=True)
-    orderby = models.IntegerField(blank=True, default=0)
     status = models.BooleanField(default=False)   # 审批状态
+
+class DailyReport_Meta(models.Model):
+    site = models.OneToOneField(Site, on_delete=models.CASCADE)
+    problem = models.TextField(default='无')
+    track = models.TextField(default='无')
