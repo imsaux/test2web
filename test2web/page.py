@@ -783,7 +783,8 @@ def daily_edit(request, _id=None, _is_copy=False):
             '',
             -1,
             _datetime_format(mode=3),
-        ],
+            [],
+        ]
 
     else:
         _report_data = models.DailyReport.objects.get(id=_id)
@@ -808,7 +809,7 @@ def daily_edit(request, _id=None, _is_copy=False):
             'box_content': _redirect(
                 'daily_edit',
                 {
-                    'title': '新增记录',
+                    'title': '编辑记录',
                     'all_site': _sites,
                     'date_now': _datetime_format(mode=3),
                     'error_reason': _reasons,
