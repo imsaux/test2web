@@ -44,6 +44,7 @@ urlpatterns = [
             url(r'^daily_create_single/$', daily_create_single, name='daily_create_single'),
             url(r'^daily_create_all/$', daily_create_all, name='daily_create_all'),
             url(r'^daily_export_excel/$', export_xlsx, name='daily_export_excel'),
+            url(r'^daily_ajax_search/$', daily_ajax_search, name='daily_ajax_search'),
 
             url(r'^init/$', init, name='init'),
             url(r'^admin/', admin.site.urls, name='admin'),

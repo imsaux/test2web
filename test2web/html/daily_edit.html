@@ -18,18 +18,26 @@
                         {% if data %}
                             <div class="control-group">
                                 <label class="control-label" for="selectErrorSite">站点</label>
-                                <div class="controls">
-                                    <select id="selectErrorSite" data-rel="chosen" name="r_site">
-                                        {% for site in all_site %}
-                                            {% if site == data.0 %}
-                                                <option selected="True">{{ site }}</option>
-                                            {% else %}
-                                                <option>{{ site }}</option>
-                                            {% endif %}
-                                        {% endfor %}
-                                    </select>
-                                </div>
+                                {% if single %}
+                                    <div class="controls">
+                                        <input id="sites" class="input-xlarge focused" value="{{ data.0 }}" type="text"
+                                           name="r_sites" readonly="true">
+                                    </div>
+                                {% else %}
+                                    <div class="controls">
+                                        <select id="selectErrorSite" data-rel="chosen" name="r_sites">
+                                            {% for site in all_site %}
+                                                {% if site == data.0 %}
+                                                    <option selected="True">{{ site }}</option>
+                                                {% else %}
+                                                    <option>{{ site }}</option>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                {% endif %}
                             </div>
+
 
                             <div class="control-group">
                                 <label class="control-label" for="date01">日期</label>

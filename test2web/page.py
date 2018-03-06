@@ -533,7 +533,6 @@ def daily_manage_search(request):
         }
     )
 
-
 def daily_view_search(request):
 
     global _r_start_date_, _r_end_date_ , _r_site_, _r_reasons_
@@ -614,7 +613,7 @@ def daily_manage(request, _date=datetime.datetime.now(), init_global=True):
     if init_global:
         _init_global()
     _range_from, _range_to = _get_range_date(_date)
-    _sites = ['全部'] + [x.name for x in models.Site.objects.all().order_by('order')]
+    _sites = ['全部'] + [x.code for x in models.Site.objects.all().order_by('order')]
     _reasons = ['全部'] + [x.name for x in models.Reason.objects.all()]
 
     all_data = _get_daily_data()
@@ -640,8 +639,26 @@ def daily_manage(request, _date=datetime.datetime.now(), init_global=True):
         }
     )
 
+def daily_ajax_search(request):
+    from django.core import serializers
+    try:
+        _site = request.POST['site']
+        _site_obj = models.Site.objects.get(name=_site)
+        _meta_obj = models.DailyReport_Meta.objects.get(site=_site_obj.id)
+        ret = list()
+        ret.append(_meta_obj.problem)
+        ret.append(',')
+        ret.append(_meta_obj.track)
+        return HttpResponse(ret)
+    except Exception as e:
+        pass
+
 def daily_create_single(request):
-    return daily_edit(request)
+    # _site = request.POST['r_site']
+    _site_obj = models.Site.objects.all().first()
+    # _site_obj = models.Site.objects.get(code=_site)
+    _meta_obj = models.DailyReport_Meta.objects.get(site=_site_obj.id)
+    return daily_edit(request, _site=_site_obj.name, _site_problem=_meta_obj.problem, _site_track=_meta_obj.track)
 
 def daily_create_all(request):
     _auto_create_daily_info()
@@ -670,7 +687,7 @@ def daily_unconfirm(request, _id):
 
 
 def daily_save(request, _id):
-    _site = models.Site.objects.get(name=str(request.POST['r_site']))
+    _site = models.Site.objects.get(name=str(request.POST['r_sites']))
     _date = datetime.datetime.strptime(request.POST['r_date'], '%m/%d/%Y')
     if _id == '-1':
         try:
@@ -739,6 +756,7 @@ def daily_save(request, _id):
 
         _reasons = [models.Reason.objects.get(
             name=x) for x in request.POST.getlist('r_reason')]
+        daily_report_obj.reason.clear();
         for r in _reasons:
             daily_report_obj.reason.add(r)
 
@@ -767,19 +785,20 @@ def daily_detail_img(request, _id):
         }
     )
 
-
-def daily_edit(request, _id=None, _is_copy=False):
+def daily_edit(request, _id=None, _site=None,  _site_problem='无', _site_track='无', _is_copy=False):
+    _js = r"""<script src="/static/js/my/daily_edit.js"></script>"""
     _range_from, _range_to = _get_range_date(datetime.datetime.now())
-    _sites = [x.name for x in models.Site.objects.all()]
     _reasons = [x.name for x in models.Reason.objects.all()]
     _data_ = list()
+    _sites = [x.name for x in models.Site.objects.all()]
+
     if _id is None:
         _data_= [
             '全部',
             '0',
             '无',
-            '无',
-            '无',
+            _site_problem,
+            _site_track,
             '',
             -1,
             _datetime_format(mode=3),
@@ -787,6 +806,7 @@ def daily_edit(request, _id=None, _is_copy=False):
         ]
 
     else:
+
         _report_data = models.DailyReport.objects.get(id=_id)
         _meta_data = models.DailyReport_Meta.objects.filter(site=_report_data.site).last()
         _problem = _meta_data.problem if _meta_data is not None else '无'
@@ -814,10 +834,11 @@ def daily_edit(request, _id=None, _is_copy=False):
                     'date_now': _datetime_format(mode=3),
                     'error_reason': _reasons,
                     'data': _data_,
+                    # 'single': True if _id is None else False,
                 }
             ),
             'user': request.user,
-
+            'body_script': _js,
         }
     )
 
