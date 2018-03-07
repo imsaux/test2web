@@ -978,8 +978,26 @@ def add_warning(request):
     finally:
         return warning_page(request)
 
+def daily_all_confirm(request):
+    x = datetime.datetime.now() if _r_start_date_ is None else datetime.datetime.strptime(_r_start_date_, '%m/%d/%Y')
+    y = datetime.datetime.now() if _r_end_date_ is None else datetime.datetime.strptime(_r_end_date_, '%m/%d/%Y')
+    _data_ = models.DailyReport.objects.filter(date__range=(x, y))
+    for data in _data_:
+        data.status = True
+        data.save()
+    return daily_manage(request, init_global=False)
 
-def init(request):
+def daily_all_unconfirm(request):
+    x = datetime.datetime.now() if _r_start_date_ is None else datetime.datetime.strptime(_r_start_date_, '%m/%d/%Y')
+    y = datetime.datetime.now() if _r_end_date_ is None else datetime.datetime.strptime(_r_end_date_, '%m/%d/%Y')
+    _data_ = models.DailyReport.objects.filter(date__range=(x, y))
+    for data in _data_:
+        data.status = False
+        data.save()
+    return daily_manage(request, init_global=False)
+
+
+def data_init(request):
     _r1 = models.Reason(pid=0, name='图像质量')
     _r2 = models.Reason(pid=0, name='截图不准')
     _r3 = models.Reason(pid=0, name='TOEC服务')

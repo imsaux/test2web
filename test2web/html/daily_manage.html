@@ -155,33 +155,25 @@ window.event.returnValue = false;
             </div>
         </div>
         <div class="box-content">
-            <form class="form-horizontal" enctype="multipart/form-data" action="/daily_create_single/" method="post">
-                <fieldset>
-                    <div class="control-group">
-{#                        <label class="control-label" for="selectErrorSite2">站点</label>#}
-{#                        <div class="controls">#}
-{#                            <select id="selectErrorSite2" data-rel="chosen" name="r_site">#}
-{#                                {% for site in all_site %}#}
-{#                                    {% if site == q_site %}#}
-{#                                        <option selected="True">{{ site }}</option>#}
-{#                                    {% else %}#}
-{#                                        <option>{{ site }}</option>#}
-{#                                    {% endif %}#}
-{#                                {% endfor %}#}
-{#                            </select>#}
-{#                            <button type="submit" class="btn btn-primary">新增</button>#}
-                            <a href="/daily_create_single"  class="btn btn-success">
-                                <i class="icon-envelope"></i>
-                                <span class="hidden-tablet"> 新增记录</span>
-                            </a>
-                            <a href="/daily_create_all"  class="btn btn-success">
-                                <i class="icon-envelope"></i>
-                                <span class="hidden-tablet"> 批量新增记录</span>
-                            </a>
-                        </div>
-                    </div>
-                </fieldset>
-            </form>
+            <div class="control-group">
+                    <a href="/daily_create_single"  class="btn btn-success">
+                        <i class="icon-envelope"></i>
+                        <span class="hidden-tablet"> 新增记录</span>
+                    </a>
+                    <a href="/daily_create_all"  class="btn btn-success">
+                        <i class="icon-envelope"></i>
+                        <span class="hidden-tablet"> 批量新增记录</span>
+                    </a>
+                    <a href="/daily_all_confirm"  class="btn btn-success">
+                        <i class="icon-envelope"></i>
+                        <span class="hidden-tablet"> 批量审批记录</span>
+                    </a>
+                    <a href="/daily_all_unconfirm"  class="btn btn-success">
+                        <i class="icon-envelope"></i>
+                        <span class="hidden-tablet"> 批量取消审批记录</span>
+                    </a>
+                </div>
+            </div>
         </div>
     </div>
 </div>

@@ -45,8 +45,10 @@ urlpatterns = [
             url(r'^daily_create_all/$', daily_create_all, name='daily_create_all'),
             url(r'^daily_export_excel/$', export_xlsx, name='daily_export_excel'),
             url(r'^daily_ajax_search/$', daily_ajax_search, name='daily_ajax_search'),
+            url(r'^daily_all_confirm/$', daily_all_confirm, name='daily_all_confirm'),
+            url(r'^daily_all_unconfirm/$', daily_all_unconfirm, name='daily_all_unconfirm'),
 
-            url(r'^init/$', init, name='init'),
+            url(r'^data_init/$', data_init, name='data_init'),
             url(r'^admin/', admin.site.urls, name='admin'),
             url(r'^$', login),
             url(r'^accounts/login/$', login),
