@@ -640,7 +640,6 @@ def daily_manage(request, _date=datetime.datetime.now(), init_global=True):
     )
 
 def daily_ajax_search(request):
-    from django.core import serializers
     try:
         _site = request.POST['site']
         _site_obj = models.Site.objects.get(name=_site)

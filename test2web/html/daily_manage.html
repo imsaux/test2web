@@ -1,3 +1,10 @@
+<script type="text/javascript">
+function del(){
+if(!confirm("确认要删除？")){
+window.event.returnValue = false;
+}
+}
+</script>
 <div class="row-fluid">
     <div class="box span12">
         <div class="box-header" data-original-title>
@@ -48,7 +55,7 @@
                                 <a class="btn btn-info" href="/daily_edit/{{ item.5 }}" title="编辑">
                                     <i class="halflings-icon white edit"></i>
                                 </a>
-                                <a class="btn btn-info" href="/daily_delete/{{ item.5 }}" title="删除">
+                                <a class="btn btn-info" href="/daily_delete/{{ item.5 }}" onclick="return del()" title="删除">
                                     <i class="halflings-icon white delete"></i>
                                 </a>
                                 <a class="btn btn-info" href="/daily_copy/{{ item.5 }}" title="复制">

@@ -15,6 +15,18 @@
                 <form class="form-horizontal" enctype="multipart/form-data" action="/daily_save/{{ data.6 }}/"
                       method="post">
                     <fieldset>
+                            <div class="control-group">
+                                <div class="form-actions">
+                                    <button type="submit" class="btn btn-primary">保存</button>
+                                    <button type="reset" class="btn">重置</button>
+                                </div>
+                            </div>
+                            <div class="control-group">
+                            </div>
+
+                            <div class="control-group">
+                            </div>
+
                         {% if data %}
                             <div class="control-group">
                                 <label class="control-label" for="selectErrorSite">站点</label>
@@ -75,14 +87,14 @@
                         {% endif %}
 
 
-                        <div class="control-group hidden-phone">
+                        <div class="control-group">
                             <label class="control-label" for="tr_1">问题及处理</label>
                             <div class="controls">
                                 <textarea  id="tr_1" name="r_problem" rows="5" cols="78">{{ data.3 }}</textarea>
                             </div>
                         </div>
 
-                        <div class="control-group hidden-phone">
+                        <div class="control-group">
                             <label class="control-label" for="tr_2">问题追踪</label>
                             <div class="controls">
                                 <textarea id="tr_2" rows="5" cols="78" name="r_track">{{ data.4 }}</textarea>
