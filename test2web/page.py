@@ -609,7 +609,8 @@ def daily_view(request, _date=datetime.datetime.now()):
     )
 
 @login_required
-def daily_manage(request, _date=datetime.datetime.now(), init_global=True):
+def daily_manage(request, _date=datetime.datetime.now(), init_global=True, loc=None):
+    _js = r"""<script src="/static/js/location.js"></script>"""
     if init_global:
         _init_global()
     _range_from, _range_to = _get_range_date(_date)
@@ -632,10 +633,12 @@ def daily_manage(request, _date=datetime.datetime.now(), init_global=True):
                     'q_reason': list() if _r_reasons_ is None else _r_reasons_,
                     'q_start_date': _datetime_format(mode=3) if _r_start_date_ is None else _r_start_date_,
                     'q_end_date': _datetime_format(mode=3) if _r_end_date_ is None else _r_end_date_,
+                    'loc': int(loc) if loc is not None else None,
 
                 }
             ),
             'user': request.user,
+            'body_script': _js,
         }
     )
 
@@ -675,14 +678,14 @@ def daily_confirm(request, _id):
     obj = models.DailyReport.objects.get(id=_id)
     obj.status = True
     obj.save()
-    return daily_manage(request, init_global=False)
+    return daily_manage(request, init_global=False, loc=_id)
 
 
 def daily_unconfirm(request, _id):
     obj = models.DailyReport.objects.get(id=_id)
     obj.status = False
     obj.save()
-    return daily_manage(request, init_global=False)
+    return daily_manage(request, init_global=False, loc=_id)
 
 
 def daily_save(request, _id):
@@ -759,7 +762,7 @@ def daily_save(request, _id):
         for r in _reasons:
             daily_report_obj.reason.add(r)
 
-    return daily_manage(request)
+    return daily_manage(request, loc=_id)
 
 
 def daily_detail_img(request, _id):
