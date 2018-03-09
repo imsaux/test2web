@@ -981,6 +981,7 @@ def add_warning(request):
     finally:
         return warning_page(request)
 
+
 def daily_all_confirm(request):
     x = datetime.datetime.now() if _r_start_date_ is None else datetime.datetime.strptime(_r_start_date_, '%m/%d/%Y')
     y = datetime.datetime.now() if _r_end_date_ is None else datetime.datetime.strptime(_r_end_date_, '%m/%d/%Y')
@@ -1001,76 +1002,65 @@ def daily_all_unconfirm(request):
 
 
 def data_init(request):
-    _r1 = models.Reason(pid=0, name='图像质量')
-    _r2 = models.Reason(pid=0, name='截图不准')
-    _r3 = models.Reason(pid=0, name='TOEC服务')
-    _r4 = models.Reason(pid=0, name='算法本身')
-    _r5 = models.Reason(pid=0, name='其他')
-    _r1.save()
-    _r2.save()
-    _r3.save()
-    _r4.save()
-    _r5.save()
 
-    _site1 = models.Site(name='杨柳青', order=1, code='ylq')
-    _site2 = models.Site(name='静海', order=2, code='jh')
-    _site3 = models.Site(name='唐官屯', order=3, code='tgt')
-    _site4 = models.Site(name='虎石台', order=4, code='hst')
-    _site5 = models.Site(name='炎方', order=5, code='yf')
-    _site6 = models.Site(name='江都', order=6, code='jd')
-    _site7 = models.Site(name='南莫', order=7, code='nm')
-    _site8 = models.Site(name='泰州西', order=8, code='tzx')
-    _site9 = models.Site(name='扬州东', order=9, code='yzd')
-    _site10 = models.Site(name='白浦', order=10, code='bp')
-    _site11 = models.Site(name='六合', order=11, code='lh')
-    _site12 = models.Site(name='浦口北', order=12, code='pkb')
-    _site13 = models.Site(name='如皋', order=13, code='rg')
-    _site14 = models.Site(name='殷庄', order=14, code='yz')
-    _site15 = models.Site(name='饮马峡', order=15, code='ymx')
-    _site16 = models.Site(name='小桥', order=16, code='xq')
-    _site17 = models.Site(name='双寨', order=17, code='sz')
-    _site18 = models.Site(name='柯柯', order=18, code='kk')
-    _site19 = models.Site(name='海石湾', order=19, code='hsw')
-    _site20 = models.Site(name='哈尔盖', order=20, code='heg')
-    _site21 = models.Site(name='察尔汗', order=21, code='ceh')
-    _site22 = models.Site(name='那曲', order=22, code='nq')
-    _site23 = models.Site(name='拉萨', order=23, code='ls')
-    _site24 = models.Site(name='查汗诺', order=24, code='chn')
-    _site1.save()
-    _site2.save()
-    _site3.save()
-    _site4.save()
-    _site5.save()
-    _site6.save()
-    _site7.save()
-    _site8.save()
-    _site9.save()
-    _site10.save()
-    _site11.save()
-    _site12.save()
-    _site13.save()
-    _site14.save()
-    _site15.save()
-    _site16.save()
-    _site17.save()
-    _site18.save()
-    _site19.save()
-    _site20.save()
-    _site21.save()
-    _site22.save()
-    _site23.save()
-    _site24.save()
+    _reason_ = [
+        ['图像质量', 0],
+        ['截图不准', 0],
+        ['TOEC服务', 0],
+        ['算法本身', 0],
+        ['其他', 0],
+    ]
 
-    _algo11 = models.Warn(name='车门开启')
-    _algo12 = models.Warn(name='客车车门开启')
-    _algo13 = models.Warn(name='异物')
-    _algo14 = models.Warn(name='尾管未吊起')
-    _algo15 = models.Warn(name='动车注水口')
-    _algo16 = models.Warn(name='车厢连接处异物')
-    _algo11.save()
-    _algo12.save()
-    _algo13.save()
-    _algo14.save()
-    _algo15.save()
-    _algo16.save()
+    for reason in _reason_:
+        _new = models.Reason(name=reason[0], pid=reason[1])
+        _new.save()
+
+
+    _site_ = [
+        ['杨柳青', 'ylq', '北京局'],
+        ['静海', 'jh', '北京局'],
+        ['唐官屯', 'tgt', '北京局'],
+        ['虎石台', 'hst', '沈阳局'],
+        ['炎方', 'yf', '昆明局'],
+        ['江都', 'jd', '上海局'],
+        ['南莫', 'nm', '上海局'],
+        ['泰州西', 'tzx', '上海局'],
+        ['扬州东', 'yzd', '上海局'],
+        ['白浦', 'bp', '上海局'],
+        ['六合', 'lh', '上海局'],
+        ['浦口北', 'pkb', '上海局'],
+        ['如皋', 'rg', '上海局'],
+        ['殷庄', 'yz', '上海局'],
+        ['姜堰', 'jy', '上海局'],
+        ['饮马峡', 'ymx', '青藏公司'],
+        ['小桥', 'xq', '青藏公司'],
+        ['双寨', 'sz', '青藏公司'],
+        ['柯柯', 'kk', '青藏公司'],
+        ['海石湾', 'hsw', '青藏公司'],
+        ['哈尔盖', 'heg', '青藏公司'],
+        ['察尔汗', 'ceh', '青藏公司'],
+        ['那曲', 'nq', '青藏公司'],
+        ['拉萨', 'ls', '青藏公司'],
+        ['查汗诺', 'chn', '青藏公司'],
+        ['罗江', 'lj', '成都局'],
+    ]
+
+    for site in _site_:
+        _new = models.Site(name=site[0], code=site[1]+site[0], bureau=site[2], order=_site_.index(site))
+        _new.save()
+
+    _warn_ = [
+        '车门开启',
+        '客车车门开启',
+        '异物',
+        '尾管未吊起',
+        '动车注水口',
+        '车厢连接处异物',
+    ]
+
+    for warn in _warn_:
+        _new = models.Warn(name=warn)
+        _new.save()
+
+
     return HttpResponse(status=200)
