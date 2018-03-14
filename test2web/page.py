@@ -866,120 +866,120 @@ def _get_range_date(date, _startwith=8):
 
     return _start_date, _end_date
 
-
-def warning_detail(request, _date, _site, _algo, _line, _err_type):
-    _date = datetime.datetime.strptime(_date, '%Y年%m月%d日')
-    all_warning = models.Warning.objects.filter(
-        warning_type=_err_type,
-        algo=models.Algo.objects.get(name=_algo),
-        line=_line,
-        date=_date,
-        site=models.Site.objects.get(name=_site),
-    )
-    data = list()
-    for w in all_warning:
-        _this = list()
-        _this.append(_datetime_format(date=w.date))
-        _this.append(w.site.name)
-        _this.append(w.line)
-        _this.append(w.kind.name)
-        _this.append(w.side)
-        _this.append(w.warning_type)
-        _this.append(w.algo.all().values('name')[0]['name'])
-        _this.append('、'.join([x['name']
-                               for x in w.reason.all().values('name')]))
-        _this.append('/' + w.pic.name)
-        data.append(_this)
-
-    return render_to_response(
-        'base.html',
-        {
-            'box_content': _redirect(
-                'detail',
-                {
-                    'detail_data': data,
-                }
-            ),
-            'user': request.user,
-        }
-    )
-
-
-def search_warning(request):
-    _date = request.POST['r_date']
-    _to_date = datetime.datetime.strptime(_date, '%m/%d/%Y')
-    _site = request.POST['r_site']
-    return get_data(request, _site, _to_date)
+#
+# def warning_detail(request, _date, _site, _algo, _line, _err_type):
+#     _date = datetime.datetime.strptime(_date, '%Y年%m月%d日')
+#     all_warning = models.Warning.objects.filter(
+#         warning_type=_err_type,
+#         algo=models.Algo.objects.get(name=_algo),
+#         line=_line,
+#         date=_date,
+#         site=models.Site.objects.get(name=_site),
+#     )
+#     data = list()
+#     for w in all_warning:
+#         _this = list()
+#         _this.append(_datetime_format(date=w.date))
+#         _this.append(w.site.name)
+#         _this.append(w.line)
+#         _this.append(w.kind.name)
+#         _this.append(w.side)
+#         _this.append(w.warning_type)
+#         _this.append(w.algo.all().values('name')[0]['name'])
+#         _this.append('、'.join([x['name']
+#                                for x in w.reason.all().values('name')]))
+#         _this.append('/' + w.pic.name)
+#         data.append(_this)
+#
+#     return render_to_response(
+#         'base.html',
+#         {
+#             'box_content': _redirect(
+#                 'detail',
+#                 {
+#                     'detail_data': data,
+#                 }
+#             ),
+#             'user': request.user,
+#         }
+#     )
 
 
-def add_info(request):
-    _date = datetime.datetime.strptime(request.POST['r_date'], '%m/%d/%Y')
-    _site = models.Site.objects.get(name=request.POST['r_site'])
-    _sx_h_lie = int(request.POST['sx_h_lie']
-                    ) if request.POST['sx_h_lie'] != '' else 0
-    _sx_h_liang = int(request.POST['sx_h_liang']
-                      ) if request.POST['sx_h_liang'] != '' else 0
-    _sx_k_lie = int(request.POST['sx_k_lie']
-                    ) if request.POST['sx_k_lie'] != '' else 0
-    _sx_k_liang = int(request.POST['sx_k_liang']
-                      ) if request.POST['sx_k_liang'] != '' else 0
-    _xx_h_lie = int(request.POST['xx_h_lie']
-                    ) if request.POST['xx_h_lie'] != '' else 0
-    _xx_h_liang = int(request.POST['xx_h_liang']
-                      ) if request.POST['xx_h_liang'] != '' else 0
-    _xx_k_lie = int(request.POST['xx_k_lie']
-                    ) if request.POST['xx_k_lie'] != '' else 0
-    _xx_k_liang = int(request.POST['xx_k_liang']
-                      ) if request.POST['xx_k_liang'] != '' else 0
-    _new = models.Info(
-        datetime=_date,
-        site=_site,
-        sx_h_liang=_sx_h_liang,
-        sx_h_lie=_sx_h_lie,
-        sx_k_liang=_sx_k_liang,
-        sx_k_lie=_sx_k_lie,
-        xx_h_liang=_xx_h_liang,
-        xx_h_lie=_xx_h_lie,
-        xx_k_liang=_xx_k_liang,
-        xx_k_lie=_xx_k_lie,
-    )
-    _new.save()
-    return stat_page(request)
+# def search_warning(request):
+#     _date = request.POST['r_date']
+#     _to_date = datetime.datetime.strptime(_date, '%m/%d/%Y')
+#     _site = request.POST['r_site']
+#     return get_data(request, _site, _to_date)
+#
+
+# def add_info(request):
+#     _date = datetime.datetime.strptime(request.POST['r_date'], '%m/%d/%Y')
+#     _site = models.Site.objects.get(name=request.POST['r_site'])
+#     _sx_h_lie = int(request.POST['sx_h_lie']
+#                     ) if request.POST['sx_h_lie'] != '' else 0
+#     _sx_h_liang = int(request.POST['sx_h_liang']
+#                       ) if request.POST['sx_h_liang'] != '' else 0
+#     _sx_k_lie = int(request.POST['sx_k_lie']
+#                     ) if request.POST['sx_k_lie'] != '' else 0
+#     _sx_k_liang = int(request.POST['sx_k_liang']
+#                       ) if request.POST['sx_k_liang'] != '' else 0
+#     _xx_h_lie = int(request.POST['xx_h_lie']
+#                     ) if request.POST['xx_h_lie'] != '' else 0
+#     _xx_h_liang = int(request.POST['xx_h_liang']
+#                       ) if request.POST['xx_h_liang'] != '' else 0
+#     _xx_k_lie = int(request.POST['xx_k_lie']
+#                     ) if request.POST['xx_k_lie'] != '' else 0
+#     _xx_k_liang = int(request.POST['xx_k_liang']
+#                       ) if request.POST['xx_k_liang'] != '' else 0
+#     _new = models.Info(
+#         datetime=_date,
+#         site=_site,
+#         sx_h_liang=_sx_h_liang,
+#         sx_h_lie=_sx_h_lie,
+#         sx_k_liang=_sx_k_liang,
+#         sx_k_lie=_sx_k_lie,
+#         xx_h_liang=_xx_h_liang,
+#         xx_h_lie=_xx_h_lie,
+#         xx_k_liang=_xx_k_liang,
+#         xx_k_lie=_xx_k_lie,
+#     )
+#     _new.save()
+#     return stat_page(request)
 
 
-def add_warning(request):
-    # if request.Method == 'POST':
-    _date = request.POST['r_date']
-    _to_date = datetime.datetime.strptime(_date, '%m/%d/%Y')
-    _site = models.Site.objects.get(name=request.POST['r_site'])
-    _kind = models.Kind.objects.get(name=request.POST['r_kind'])
-    _side = request.POST['r_side']
-    _line = request.POST['r_line']
-    _pic = request.FILES['r_pic']
-    _type = request.POST['r_type']
-    _algo = models.Algo.objects.get(name=request.POST['r_algo_type'])
-    try:
-        _add = models.Warning(
-            date=_to_date,
-            site=_site,
-            side=_side,
-            line=_line,
-            kind=_kind,
-            warning_type=_type,
-            pic=_pic,
-        )
-        _add.save()
-        _add.algo.add(_algo)
-        if _type != '真实':
-            _reasons = [models.Reason.objects.get(
-                name=x) for x in request.POST.getlist('r_reason')]
-            for r in _reasons:
-                _add.reason.add(r)
-
-    except Exception as e:
-        logic.to_log('error', repr(e))
-    finally:
-        return warning_page(request)
+# def add_warning(request):
+#     # if request.Method == 'POST':
+#     _date = request.POST['r_date']
+#     _to_date = datetime.datetime.strptime(_date, '%m/%d/%Y')
+#     _site = models.Site.objects.get(name=request.POST['r_site'])
+#     _kind = models.Kind.objects.get(name=request.POST['r_kind'])
+#     _side = request.POST['r_side']
+#     _line = request.POST['r_line']
+#     _pic = request.FILES['r_pic']
+#     _type = request.POST['r_type']
+#     _algo = models.Algo.objects.get(name=request.POST['r_algo_type'])
+#     try:
+#         _add = models.Warning(
+#             date=_to_date,
+#             site=_site,
+#             side=_side,
+#             line=_line,
+#             kind=_kind,
+#             warning_type=_type,
+#             pic=_pic,
+#         )
+#         _add.save()
+#         _add.algo.add(_algo)
+#         if _type != '真实':
+#             _reasons = [models.Reason.objects.get(
+#                 name=x) for x in request.POST.getlist('r_reason')]
+#             for r in _reasons:
+#                 _add.reason.add(r)
+#
+#     except Exception as e:
+#         logic.to_log('error', repr(e))
+#     finally:
+#         return warning_page(request)
 
 
 def daily_all_confirm(request):
@@ -1003,64 +1003,71 @@ def daily_all_unconfirm(request):
 
 def data_init(request):
 
-    _reason_ = [
-        ['图像质量', 0],
-        ['截图不准', 0],
-        ['TOEC服务', 0],
-        ['算法本身', 0],
-        ['其他', 0],
-    ]
+    init_reason = True
+    init_site = True
+    init_warn = True
 
-    for reason in _reason_:
-        _new = models.Reason(name=reason[0], pid=reason[1])
-        _new.save()
+    if init_reason:
+        _reason_ = [
+            ['图像质量', 0],
+            ['截图不准', 0],
+            ['TOEC服务', 0],
+            ['算法本身', 0],
+            ['其他', 0],
+        ]
 
+        for reason in _reason_:
+            _new = models.Reason(name=reason[0], pid=reason[1])
+            _new.save()
 
-    _site_ = [
-        ['杨柳青', 'ylq', '北京局'],
-        ['静海', 'jh', '北京局'],
-        ['唐官屯', 'tgt', '北京局'],
-        ['虎石台', 'hst', '沈阳局'],
-        ['炎方', 'yf', '昆明局'],
-        ['江都', 'jd', '上海局'],
-        ['南莫', 'nm', '上海局'],
-        ['泰州西', 'tzx', '上海局'],
-        ['扬州东', 'yzd', '上海局'],
-        ['白浦', 'bp', '上海局'],
-        ['六合', 'lh', '上海局'],
-        ['浦口北', 'pkb', '上海局'],
-        ['如皋', 'rg', '上海局'],
-        ['殷庄', 'yz', '上海局'],
-        ['姜堰', 'jy', '上海局'],
-        ['饮马峡', 'ymx', '青藏公司'],
-        ['小桥', 'xq', '青藏公司'],
-        ['双寨', 'sz', '青藏公司'],
-        ['柯柯', 'kk', '青藏公司'],
-        ['海石湾', 'hsw', '青藏公司'],
-        ['哈尔盖', 'heg', '青藏公司'],
-        ['察尔汗', 'ceh', '青藏公司'],
-        ['那曲', 'nq', '青藏公司'],
-        ['拉萨', 'ls', '青藏公司'],
-        ['查汗诺', 'chn', '青藏公司'],
-        ['罗江', 'lj', '成都局'],
-    ]
+    if init_site:
+        _site_ = [
+            ['杨柳青', 'ylq', '北京局'],
+            ['静海', 'jh', '北京局'],
+            ['唐官屯', 'tgt', '北京局'],
+            ['虎石台', 'hst', '沈阳局'],
+            ['炎方', 'yf', '昆明局'],
+            ['江都', 'jd', '上海局'],
+            ['南莫', 'nm', '上海局'],
+            ['泰州西', 'tzx', '上海局'],
+            ['扬州东', 'yzd', '上海局'],
+            ['白浦', 'bp', '上海局'],
+            ['六合', 'lh', '上海局'],
+            ['浦口北', 'pkb', '上海局'],
+            ['如皋', 'rg', '上海局'],
+            ['殷庄', 'yz', '上海局'],
+            ['姜堰', 'jy', '上海局'],
+            ['饮马峡', 'ymx', '青藏公司'],
+            ['小桥', 'xq', '青藏公司'],
+            ['双寨', 'sz', '青藏公司'],
+            ['柯柯', 'kk', '青藏公司'],
+            ['海石湾', 'hsw', '青藏公司'],
+            ['哈尔盖', 'heg', '青藏公司'],
+            ['察尔汗', 'ceh', '青藏公司'],
+            ['那曲', 'nq', '青藏公司'],
+            ['拉萨', 'ls', '青藏公司'],
+            ['查汗诺', 'chn', '青藏公司'],
+            ['罗江', 'lj', '成都局'],
+        ]
 
-    for site in _site_:
-        _new = models.Site(name=site[0], code=site[1]+site[0], bureau=site[2], order=_site_.index(site))
-        _new.save()
+        for site in _site_:
+            _new = models.Site(name=site[0], code=site[1]+site[0], bureau=site[2], order=_site_.index(site))
+            _new.save()
 
-    _warn_ = [
-        '车门开启',
-        '客车车门开启',
-        '异物',
-        '尾管未吊起',
-        '动车注水口',
-        '车厢连接处异物',
-    ]
+    if init_warn:
 
-    for warn in _warn_:
-        _new = models.Warn(name=warn)
-        _new.save()
+        _warn_ = [
+            '车门开启',
+            '客车车门开启',
+            '异物',
+            '尾管未吊起',
+            '动车注水口',
+            '车厢连接处异物',
+        ]
+
+        for warn in _warn_:
+            _new = models.Warn(name=warn)
+            _new.save()
 
 
     return HttpResponse(status=200)
