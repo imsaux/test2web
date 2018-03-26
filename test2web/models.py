@@ -55,6 +55,12 @@ class ClientStatus(models.Model):
     line_1_carriages = models.IntegerField(default=0)
     line_2_carriages = models.IntegerField(default=0)
 
+class DailyReport_Meta(models.Model):
+    date = models.DateField(null=True)
+    site = models.ForeignKey(Site, on_delete=models.CASCADE)
+    problem = models.TextField(default='无')
+    track = models.TextField(default='无')
+
 class DailyReport(models.Model):
     date = models.DateField(default=None, blank=True)
     site = models.ForeignKey(Site, on_delete=models.CASCADE)
@@ -63,8 +69,3 @@ class DailyReport(models.Model):
     carriages_count = models.IntegerField(default=0)
     imgs = models.BinaryField(blank=True)
     status = models.BooleanField(default=False)   # 审批状态
-
-class DailyReport_Meta(models.Model):
-    site = models.OneToOneField(Site, on_delete=models.CASCADE)
-    problem = models.TextField(default='无')
-    track = models.TextField(default='无')

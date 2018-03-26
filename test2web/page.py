@@ -352,14 +352,14 @@ def _datetime_format(date=datetime.datetime.now(), mode=1):
 
 def _auto_create_daily_info(date=datetime.datetime.now()):
     # 自动创建
-    _return = list()
+    # _return = list()
     _all_site_ = [x.code for x in models.Site.objects.all().order_by('order')]
     _range_from, _range_to = _get_range_date(date)
     for site in _all_site_:
         _site_obj = models.Site.objects.get(code=site)
         _site_warning = models.ClientWarning.objects.filter(site=_site_obj, datetime__range=(_range_from, _range_to))
         _site_status = models.ClientStatus.objects.filter(site=_site_obj, datetime__range=(_range_from, _range_to))
-        _site_meta = models.DailyReport_Meta.objects.filter(site=_site_obj)
+        _site_meta = models.DailyReport_Meta.objects.filter(site=_site_obj).order_by("date")
 
         if len(_site_warning) > 0:
             _columns = [x['warn'] for x in _site_warning.values('warn').distinct()]  # 列出报警类型
@@ -394,16 +394,25 @@ def _auto_create_daily_info(date=datetime.datetime.now()):
         _new.save()
 
         if len(_site_meta) > 0:
-            _return.append([_site_obj.name, carriages, warning, _site_meta.last().problem, _site_meta.last().track, _new.id, _new.status])
+            _new_meta = models.DailyReport_Meta(
+                date=date,
+                site=_site_obj,
+                problem=_site_meta.last().problem,
+                track=_site_meta.last().track,
+            )
+            _new_meta.save()
+
+            # _return.append([_site_obj.name, carriages, warning, _site_meta.last().problem, _site_meta.last().track, _new.id, _new.status])
         else:
             _new_meta = models.DailyReport_Meta(
+                date=date,
                 site=_site_obj,
                 problem='无',
                 track='无',
             )
             _new_meta.save()
-            _return.append([_site_obj.name, carriages, warning, '无', '无', _new.id, _new.status])
-    return _return
+            # _return.append([_site_obj.name, carriages, warning, '无', '无', _new.id, _new.status])
+    # return _return
 
 
 def _get_daily_data(_from=datetime.datetime.now(), _to=datetime.datetime.now(), _site_name=None, _reasons=None, _is_confirm=False):
@@ -438,7 +447,7 @@ def _get_daily_data(_from=datetime.datetime.now(), _to=datetime.datetime.now(), 
             for data in _site_data_:
                 carriages_count = data.carriages_count
                 warn = data.warn
-                _data_meta = models.DailyReport_Meta.objects.filter(site=_site_obj)
+                _data_meta = models.DailyReport_Meta.objects.filter(site=_site_obj, date=data.date)
                 if len(_data_meta) > 0:
                     _return.append(
                         [
@@ -659,8 +668,8 @@ def daily_create_single(request):
     # _site = request.POST['r_site']
     _site_obj = models.Site.objects.all().first()
     # _site_obj = models.Site.objects.get(code=_site)
-    _meta_obj = models.DailyReport_Meta.objects.get(site=_site_obj.id)
-    return daily_edit(request, _site=_site_obj.name, _site_problem=_meta_obj.problem, _site_track=_meta_obj.track)
+    _meta_obj = models.DailyReport_Meta.objects.filter(site=_site_obj.id)
+    return daily_edit(request, _site=_site_obj.name, _site_problem=_meta_obj.last().problem if len(_meta_obj)>0 else "无", _site_track=_meta_obj.last().track  if len(_meta_obj)>0 else "无")
 
 def daily_create_all(request):
     _auto_create_daily_info()
@@ -715,31 +724,35 @@ def daily_save(request, _id):
         for r in _reasons:
             _new.reason.add(r)
         try:
-            daily_report_meta_obj = models.DailyReport_Meta.objects.get(site=_site)
-            daily_report_meta_obj.problem = request.POST['r_problem']
-            daily_report_meta_obj.track = request.POST['r_track']
-            daily_report_meta_obj.save()
-        except Exception as e:
+            # daily_report_meta_obj = models.DailyReport_Meta.objects.get(site=_site)
+            # daily_report_meta_obj.problem = request.POST['r_problem']
+            # daily_report_meta_obj.track = request.POST['r_track']
+            # daily_report_meta_obj.save()
             _new_meta = models.DailyReport_Meta(
+                date=_date,
                 site=_site,
                 problem=request.POST['r_problem'],
                 track=request.POST['r_track'],
             )
             _new_meta.save()
+        except Exception as e:
+            pass
     else:
 
         try:
-            daily_report_meta_obj = models.DailyReport_Meta.objects.get(site=_site)
-            daily_report_meta_obj.problem = request.POST['r_problem']
-            daily_report_meta_obj.track = request.POST['r_track']
-            daily_report_meta_obj.save()
-        except Exception as e:
+            # daily_report_meta_obj = models.DailyReport_Meta.objects.get(site=_site)
+            # daily_report_meta_obj.problem = request.POST['r_problem']
+            # daily_report_meta_obj.track = request.POST['r_track']
+            # daily_report_meta_obj.save()
             _new_meta = models.DailyReport_Meta(
+                date=_date,
                 site=_site,
                 problem=request.POST['r_problem'],
                 track=request.POST['r_track'],
             )
             _new_meta.save()
+        except Exception as e:
+            pass
 
         daily_report_obj = models.DailyReport.objects.get(id=_id)
         try:
@@ -810,7 +823,7 @@ def daily_edit(request, _id=None, _site=None,  _site_problem='无', _site_track=
     else:
 
         _report_data = models.DailyReport.objects.get(id=_id)
-        _meta_data = models.DailyReport_Meta.objects.filter(site=_report_data.site).last()
+        _meta_data = models.DailyReport_Meta.objects.filter(site=_report_data.site, date=_report_data.date).last()
         _problem = _meta_data.problem if _meta_data is not None else '无'
         _track = _meta_data.track if _meta_data is not None else '无'
         _imgs = str(_report_data.imgs, encoding='utf-8')
@@ -865,6 +878,9 @@ def _get_range_date(date, _startwith=8):
                                                '%Y-%m-%d %H:%M:%S')
 
     return _start_date, _end_date
+
+def test_test(request):
+    return HttpResponse(content=b'haha')
 
 #
 # def warning_detail(request, _date, _site, _algo, _line, _err_type):

@@ -47,7 +47,7 @@ urlpatterns = [
             url(r'^daily_ajax_search/$', daily_ajax_search, name='daily_ajax_search'),
             url(r'^daily_all_confirm/$', daily_all_confirm, name='daily_all_confirm'),
             url(r'^daily_all_unconfirm/$', daily_all_unconfirm, name='daily_all_unconfirm'),
-
+            url(r'^test_test/$', test_test, name='test_test'),
             url(r'^data_init/$', data_init, name='data_init'),
             url(r'^admin/', admin.site.urls, name='admin'),
             url(r'^$', login),
