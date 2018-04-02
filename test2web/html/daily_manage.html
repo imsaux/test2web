@@ -1,9 +1,112 @@
 <script type="text/javascript">
 function del(){
-if(!confirm("确认要删除？")){
-window.event.returnValue = false;
+    if(!confirm("确认要删除？"))
+    {
+        window.event.returnValue = false;
+    }
+};
+var ckinit = true;
+function chall_changed() {
+    var oneches=document.getElementsByName("sels");
+    for(var i=0;i<oneches.length;i++) {
+        if(oneches[i].checked!=ckinit)
+        {
+            oneches[i].click();
+        }
+    }
+    if(ckinit==true)
+    {
+        ckinit=false;
+    }
+    else
+    {
+        ckinit=true;
+    }
 }
+
+
+/**
+ * 翻页保存checkbox选择的数据
+ */
+
+var checkedIds=""; //翻页保存选中的id
+/**
+ * 记录选择的元素
+ * @return
+ */
+function sel_changeIds(){
+    var oneches=document.getElementsByName("sels");
+    for(var i=0;i<oneches.length;i++){
+        if(oneches[i].checked==true){
+             //避免重复添加（若存在元素时，不添加）
+            if(!sel_contains(checkedIds,oneches[i].id)){
+                checkedIds+=","+oneches[i].id;
+            }
+         }
+        if(oneches[i].checked==false){
+            //取消复选框时 含有该id时将id从全局变量中去除
+            if(sel_contains(checkedIds,oneches[i].id)){
+                checkedIds=checkedIds.replace((","+oneches[i].id),"");
+            }
+         }
+     }
+ }
+/**
+ *
+ * @return
+ */
+function sel_getChecked(){
+    if(checkedIds==""){
+        return;
+    }
+    var oneches=document.getElementsByName("sels");
+    for(var i=0;i<oneches.length;i++){
+        //全局变量中含有id，则该复选框选中
+        if(sel_contains(checkedIds,oneches[i].value)){
+             oneches[i].checked="checked";
+        }
+     }
+ }
+/**
+ * 判断数组是否存在元素
+ * @param obj
+ * @param ele
+ * @return
+ */
+function sel_contains(obj, ele) {
+    if(obj==""){
+        return;
+    }
+    /*若参数obj为字符串时，需要转换成数组*/
+    var arr = obj.split(",");
+    var i = arr.length;
+    while (i--) {
+        if (arr[i] == ele) {
+            return true;
+        }
+    }
+    return false;
+};
+
+function update_selected(){
+    sel_changeIds();
+    sel_post('/daily_delete_selected/', checkedIds);
 }
+
+function sel_post(URL, PARAMS) {
+    var temp = document.createElement("form");
+    temp.action = URL;
+    temp.method = "post";
+    temp.style.display = "none";
+    var opt = document.createElement("textarea");
+    opt.name = "selected";
+    opt.value = PARAMS;
+    temp.appendChild(opt);
+    document.body.appendChild(temp);
+    temp.submit();
+    return temp;
+};
+
 </script>
 <div class="row-fluid">
     <div class="box span12">
@@ -16,6 +119,7 @@ window.event.returnValue = false;
             <table class="table table-striped table-bordered bootstrap-datatable datatable sortable">
                 <thead>
                 <tr>
+                    <th><input type="checkbox" id="ckall" onchange="chall_changed()"/></th>
                     <th>车站</th>
                     <th>过车数量</th>
                     <th>报警数</th>
@@ -34,6 +138,7 @@ window.event.returnValue = false;
                         {% else %}
                             <tr>
                         {% endif %}
+                            <td><input type="checkbox" id="{{ item.5 }}" name="sels"/></td>
                             <td>{{ item.0 }}</td>
                             <td class="center">{{ item.1 }}</td>
                             <td class="center">{{ item.2 }}</td>
@@ -175,6 +280,10 @@ window.event.returnValue = false;
                     <a href="/daily_all_unconfirm"  class="btn btn-success">
                         <i class="icon-envelope"></i>
                         <span class="hidden-tablet"> 批量取消审批记录</span>
+                    </a>
+                    <a href="javascript:update_selected()"  class="btn btn-success">
+                        <i class="icon-envelope"></i>
+                        <span class="hidden-tablet"> 删除指定记录</span>
                     </a>
                 </div>
             </div>

@@ -412,7 +412,6 @@ def _auto_create_daily_info(date=datetime.datetime.now()):
             )
             _new_meta.save()
             # _return.append([_site_obj.name, carriages, warning, '无', '无', _new.id, _new.status])
-    # return _return
 
 
 def _get_daily_data(_from=datetime.datetime.now(), _to=datetime.datetime.now(), _site_name=None, _reasons=None, _is_confirm=False):
@@ -997,6 +996,10 @@ def test_test(request):
 #     finally:
 #         return warning_page(request)
 
+def daily_delete_selected(request):
+    ids = [int(x) for x in request.POST['selected'].split(',')[1:]]
+    models.DailyReport.objects.filter(id__in=ids).delete()
+    return daily_manage(request, init_global=False)
 
 def daily_all_confirm(request):
     x = datetime.datetime.now() if _r_start_date_ is None else datetime.datetime.strptime(_r_start_date_, '%m/%d/%Y')
