@@ -1,6 +1,5 @@
 # -*- encoding:utf-8 -*-
 from django.forms import *
-from . import logic
 from . import models
 from datetime import datetime, tzinfo, timedelta, timezone
 from django.shortcuts import render, render_to_response
@@ -359,7 +358,7 @@ def _auto_create_daily_info(date=datetime.datetime.now()):
         _site_obj = models.Site.objects.get(code=site)
         _site_warning = models.ClientWarning.objects.filter(site=_site_obj, datetime__range=(_range_from, _range_to))
         _site_status = models.ClientStatus.objects.filter(site=_site_obj, datetime__range=(_range_from, _range_to))
-        _site_meta = models.DailyReport_Meta.objects.filter(site=_site_obj).order_by("date")
+        _site_meta = models.DailyReport_Meta.objects.filter(site=_site_obj).order_by("date", "id")
 
         if len(_site_warning) > 0:
             _columns = [x['warn'] for x in _site_warning.values('warn').distinct()]  # 列出报警类型
