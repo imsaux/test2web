@@ -12,8 +12,10 @@
         </div>
         <div class="box-content">
             <div class="box-content">
-                <form class="form-horizontal" enctype="multipart/form-data" action="/daily_save/{{ data.6 }}/"
-                      method="post">
+                <!-- <form class="form-horizontal" enctype="multipart/form-data" action="/daily_save/{{ data.6 }}/"
+                      method="post"> -->
+                <form class="form-horizontal" action="/daily_save/{{ data.6 }}/"
+                      method="post" onsubmit="document.getElementById('hidden_remark').value=document.getElementById('remark').innerHTML">
                     <fieldset>
                             <div class="control-group">
                                 <div class="form-actions">
@@ -33,7 +35,7 @@
                                 {% if single %}
                                     <div class="controls">
                                         <input id="sites" class="input-xlarge focused" value="{{ data.0 }}" type="text"
-                                           name="r_sites" readonly="true">
+                                           name="sites" readonly="true">
                                     </div>
                                 {% else %}
                                     <div class="controls">
@@ -124,9 +126,16 @@
 
 
                         <div class="control-group hidden-phone">
-                            <label class="control-label" for="tr_3">图片</label>
+                            <label class="control-label" for="remark">图片</label>
                             <div class="controls">
-                                <textarea class="cleditor" id="tr_3" rows="2" name="r_imgs">{{ data.5 }}</textarea>
+                                <div id="remark" contenteditable="true" style="widows: 740px;height: 350px; border: 1px solid #000;">
+                                    {% if data.5 %}
+                                        {% autoescape off %}
+                                            {{ data.5 }}
+                                        {% endautoescape %}
+                                    {% endif %}
+                                </div>
+                                <input id="hidden_remark" type=hidden name="r_remark">
                             </div>
                         </div>
 

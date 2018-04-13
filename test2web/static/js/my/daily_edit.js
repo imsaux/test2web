@@ -5,7 +5,7 @@ $(document).ready(function () {
         type: 'POST',
         url: "/daily_ajax_search/",
         data: {
-            'site': site_name,
+            'r_site': site_name,
         },
         success: function (site_info) {
             $("#tr_1")[0].value=site_info.split(',')[0];
@@ -13,3 +13,5 @@ $(document).ready(function () {
         }});
     });
 });
+
+

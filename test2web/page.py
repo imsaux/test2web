@@ -653,14 +653,14 @@ def daily_ajax_search(request):
     try:
         _site = request.POST['site']
         _site_obj = models.Site.objects.get(name=_site)
-        _meta_obj = models.DailyReport_Meta.objects.get(site=_site_obj.id)
+        _meta_obj = models.DailyReport_Meta.objects.filter(site=_site_obj.id).last()
         ret = list()
         ret.append(_meta_obj.problem)
         ret.append(',')
         ret.append(_meta_obj.track)
         return HttpResponse(ret)
     except Exception as e:
-        pass
+        return HttpResponse(None)
 
 def daily_create_single(request):
     # _site = request.POST['r_site']
@@ -704,7 +704,7 @@ def daily_save(request, _id):
         except Exception as e:
             pass
         try:
-            _imgs = str(request.POST['r_imgs']).encode()
+            _imgs = str(request.POST['r_remark']).encode()
         except Exception as e:
             pass
         _new = models.DailyReport(
@@ -758,7 +758,7 @@ def daily_save(request, _id):
         except Exception as e:
             pass
         try:
-            daily_report_obj.imgs = str(request.POST['r_imgs']).encode()
+            daily_report_obj.imgs = str(request.POST['r_remark']).encode()
         except Exception as e:
             pass
 
@@ -998,6 +998,20 @@ def test_test(request):
 def daily_delete_selected(request):
     ids = [int(x) for x in request.POST['selected'].split(',')[1:]]
     models.DailyReport.objects.filter(id__in=ids).delete()
+    return daily_manage(request, init_global=False)
+
+def daily_confirm_selected(request):
+    ids = [int(x) for x in request.POST['selected'].split(',')[1:]]
+    for dr in models.DailyReport.objects.filter(id__in=ids):
+        dr.status = True
+        dr.save()
+    return daily_manage(request, init_global=False)
+
+def daily_unconfirm_selected(request):
+    ids = [int(x) for x in request.POST['selected'].split(',')[1:]]
+    for dr in models.DailyReport.objects.filter(id__in=ids):
+        dr.status = False
+        dr.save()
     return daily_manage(request, init_global=False)
 
 def daily_all_confirm(request):

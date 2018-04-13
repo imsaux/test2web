@@ -48,6 +48,8 @@ urlpatterns = [
             url(r'^daily_all_confirm/$', daily_all_confirm, name='daily_all_confirm'),
             url(r'^daily_all_unconfirm/$', daily_all_unconfirm, name='daily_all_unconfirm'),
             url(r'^daily_delete_selected/$', daily_delete_selected, name='daily_delete_selected'),
+            url(r'^daily_confirm_selected/$', daily_confirm_selected, name='daily_confirm_selected'),
+            url(r'^daily_unconfirm_selected/$', daily_unconfirm_selected, name='daily_unconfirm_selected'),
 
             url(r'^test_test/$', test_test, name='test_test'),
             url(r'^data_init/$', data_init, name='data_init'),

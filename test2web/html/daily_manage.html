@@ -88,9 +88,18 @@ function sel_contains(obj, ele) {
     return false;
 };
 
-function update_selected(){
+function delete_selected(){
     sel_changeIds();
     sel_post('/daily_delete_selected/', checkedIds);
+}
+
+function confirm_selected(){
+    sel_changeIds();
+    sel_post('/daily_confirm_selected/', checkedIds);
+}
+function unconfirm_selected(){
+    sel_changeIds();
+    sel_post('/daily_unconfirm_selected/', checkedIds);
 }
 
 function sel_post(URL, PARAMS) {
@@ -267,23 +276,31 @@ function sel_post(URL, PARAMS) {
             <div class="control-group">
                     <a href="/daily_create_single"  class="btn btn-success">
                         <i class="icon-envelope"></i>
-                        <span class="hidden-tablet"> 新增记录</span>
+                        <span class="hidden-tablet"> 新增</span>
                     </a>
                     <a href="/daily_create_all"  class="btn btn-success">
                         <i class="icon-envelope"></i>
-                        <span class="hidden-tablet"> 批量新增记录</span>
+                        <span class="hidden-tablet"> 批量新增</span>
                     </a>
                     <a href="/daily_all_confirm"  class="btn btn-success">
                         <i class="icon-envelope"></i>
-                        <span class="hidden-tablet"> 批量审批记录</span>
+                        <span class="hidden-tablet"> 全部审批</span>
                     </a>
                     <a href="/daily_all_unconfirm"  class="btn btn-success">
                         <i class="icon-envelope"></i>
-                        <span class="hidden-tablet"> 批量取消审批记录</span>
+                        <span class="hidden-tablet"> 全部取消审批</span>
                     </a>
-                    <a href="javascript:update_selected()"  class="btn btn-success">
+                    <a href="javascript:confirm_selected()"  class="btn btn-success">
                         <i class="icon-envelope"></i>
-                        <span class="hidden-tablet"> 删除指定记录</span>
+                        <span class="hidden-tablet"> 审批</span>
+                    </a>
+                    <a href="javascript:unconfirm_selected()"  class="btn btn-success">
+                        <i class="icon-envelope"></i>
+                        <span class="hidden-tablet"> 取消审批</span>
+                    </a>
+                    <a href="javascript:delete_selected()"  class="btn btn-success">
+                        <i class="icon-envelope"></i>
+                        <span class="hidden-tablet"> 删除</span>
                     </a>
                 </div>
             </div>
