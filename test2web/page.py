@@ -799,7 +799,7 @@ def daily_detail_img(request, _id):
     )
 
 def daily_edit(request, _id=None, _site=None,  _site_problem='无', _site_track='无', _is_copy=False):
-    _js = r"""<script src="/static/js/my/daily_edit.js"></script>"""
+    _js = r"""<script src="/static/js/daily_edit.js"></script>"""
     _range_from, _range_to = _get_range_date(datetime.datetime.now())
     _reasons = [x.name for x in models.Reason.objects.all()]
     _data_ = list()
