@@ -651,7 +651,7 @@ def daily_manage(request, _date=datetime.datetime.now(), init_global=True, loc=N
 
 def daily_ajax_search(request):
     try:
-        _site = request.POST['site']
+        _site = request.POST['r_site']
         _site_obj = models.Site.objects.get(name=_site)
         _meta_obj = models.DailyReport_Meta.objects.filter(site=_site_obj.id).last()
         ret = list()
