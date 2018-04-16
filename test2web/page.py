@@ -695,83 +695,77 @@ def daily_unconfirm(request, _id):
     return daily_manage(request, init_global=False, loc=_id)
 
 
-def daily_save(request, _id):
-    _site = models.Site.objects.get(name=str(request.POST['r_sites']))
-    _date = datetime.datetime.strptime(request.POST['r_date'], '%m/%d/%Y')
-    if _id == '-1':
-        try:
-            _carriages = int(request.POST['r_carriages'])
-        except Exception as e:
-            pass
-        try:
-            _imgs = str(request.POST['r_remark']).encode()
-        except Exception as e:
-            pass
+def _save_dailyreport(self, dailyreport_id, site, date, warn=None, carriages=None, imgs=None):
+    if dailyreport_id is None:
         _new = models.DailyReport(
-            date=_date,
-            site=_site,
-            warn=str(request.POST['r_warning']),
-            carriages_count=_carriages,
-            imgs=_imgs,
-
+            date=date,
+            site=site,
+            warn=warn if warn is not None else "",
+            carriages_count=carriages if carriages is not None else "",
+            imgs=imgs if imgs is not None else ""
         )
         _new.save()
-
-        _reasons = [models.Reason.objects.get(
-            name=x) for x in request.POST.getlist('r_reason')]
-        for r in _reasons:
-            _new.reason.add(r)
-        try:
-            # daily_report_meta_obj = models.DailyReport_Meta.objects.get(site=_site)
-            # daily_report_meta_obj.problem = request.POST['r_problem']
-            # daily_report_meta_obj.track = request.POST['r_track']
-            # daily_report_meta_obj.save()
-            _new_meta = models.DailyReport_Meta(
-                date=_date,
-                site=_site,
-                problem=request.POST['r_problem'],
-                track=request.POST['r_track'],
-            )
-            _new_meta.save()
-        except Exception as e:
-            pass
+        return _new.id
     else:
+        dailyreport_obj = models.DailyReport.objects.get(id=dailyreport_id)
+        if warn is not None:
+            dailyreport_obj.warn = warn
+        if carriages is not None:
+            dailyreport_obj.carriages_count = carriages
+        if imgs is not None:
+            dailyreport_obj.imgs = imgs
+        dailyreport_obj.save()
+        return dailyreport_obj.id
 
-        try:
-            # daily_report_meta_obj = models.DailyReport_Meta.objects.get(site=_site)
-            # daily_report_meta_obj.problem = request.POST['r_problem']
-            # daily_report_meta_obj.track = request.POST['r_track']
-            # daily_report_meta_obj.save()
-            _new_meta = models.DailyReport_Meta(
-                date=_date,
-                site=_site,
-                problem=request.POST['r_problem'],
-                track=request.POST['r_track'],
-            )
-            _new_meta.save()
-        except Exception as e:
-            pass
 
-        daily_report_obj = models.DailyReport.objects.get(id=_id)
-        try:
-            daily_report_obj.carriages_count = int(request.POST['r_carriages'])
-        except Exception as e:
-            pass
-        try:
-            daily_report_obj.imgs = str(request.POST['r_remark']).encode()
-        except Exception as e:
-            pass
+def _save_dailyreportmeta(self, date, site, problem, track):
+    _new = models.DailyReport_Meta(
+        date=date,
+        site=site,
+        problem=problem,
+        track=track
+    )
+    _new.save()
 
-        daily_report_obj.warn = request.POST['r_warning']
-        daily_report_obj.date = _date
-        daily_report_obj.site = _site
-        daily_report_obj.save()
+def _save_dailyreportreason(self, dailyreport_id, reason):
+    _reasons = [models.Reason.objects.get(
+        name=x) for x in reason]
+    _dailyreport_obj = models.DailyReport.objects.get(id=dailyreport_id)
+    _dailyreport_obj.reason.clear();
+    for r in _reasons:
+        _dailyreport_obj.reason.add(r)
 
-        _reasons = [models.Reason.objects.get(
-            name=x) for x in request.POST.getlist('r_reason')]
-        daily_report_obj.reason.clear();
-        for r in _reasons:
-            daily_report_obj.reason.add(r)
+
+def daily_save(request, _id):
+    try:
+        _site = models.Site.objects.get(name=str(request.POST['r_sites']))
+        _date = datetime.datetime.strptime(request.POST['r_date'], '%m/%d/%Y')
+        _carriages = int(request.POST['r_carriages'])
+        _imgs = str(request.POST['r_remark']).encode()
+        _warn = str(request.POST['r_warning'])
+        _problem = request.POST['r_problem']
+        _track = request.POST['r_track']
+        _reason = request.POST.getlist('r_reason')
+        id = _save_dailyreport(
+            _id if _id != '-1' else None,
+            _site,
+            _date,
+            carriages=_carriages,
+            warn=_warn,
+            imgs=_imgs
+        )
+        _save_dailyreportmeta(
+            _date,
+            _site,
+            _problem,
+            _track
+        )
+        _save_dailyreportreason(
+            id,
+            _reason
+        )
+    except Exception as e:
+        pass
 
     return daily_manage(request, loc=_id)
 
