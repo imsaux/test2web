@@ -3,14 +3,15 @@ from django.forms import *
 from . import models
 from datetime import datetime, tzinfo, timedelta, timezone
 from django.shortcuts import render, render_to_response
+from django.urls import reverse
 from django.http import HttpResponseRedirect, HttpResponse
 from django.contrib.auth.admin import User
 from django.contrib.auth.decorators import login_required
 from django import forms
 from django.contrib import auth
-from django.utils.decorators import method_decorator
-from django.db.models import Max, Min, Sum
 import datetime
+import json
+# from pypinyin import pinyin, Style
 import locale
 # excel
 from openpyxl import Workbook
@@ -18,6 +19,13 @@ from openpyxl.worksheet.table import Table, TableStyleInfo
 # 文件下载
 from django.utils.http import urlquote
 from django.http import FileResponse
+
+
+global _r_start_date_, _r_end_date_, _r_site_, _r_reasons_
+_r_start_date_ = None
+_r_end_date_ = None
+_r_site_ = None
+_r_reasons_ = None
 
 # 登录表单模型
 class UserForm(forms.Form):
@@ -44,7 +52,7 @@ def login(request):
             if user is not None and user.is_active:
                 auth.login(request, user)
                 if user.is_staff:
-                    return daily_manage(request)
+                    return daily_manage_lab(request)
                 else:
                     return daily_view(request)
             else:
@@ -319,11 +327,11 @@ def export_xlsx(request):
         ws.append(
             [
                 row[9],
-                row[0],
                 row[1],
                 row[2],
                 row[3],
                 row[4],
+                row[5],
             ]
         )
     _tab_ref = "A1:F%s" % (len(all_data)+1)
@@ -352,10 +360,10 @@ def _datetime_format(date=datetime.datetime.now(), mode=1):
 def _auto_create_daily_info(date=datetime.datetime.now()):
     # 自动创建
     # _return = list()
-    _all_site_ = [x.code for x in models.Site.objects.all().order_by('order')]
+    _all_site_ = [x.name for x in models.Site.objects.all().order_by('order')]
     _range_from, _range_to = _get_range_date(date)
     for site in _all_site_:
-        _site_obj = models.Site.objects.get(code=site)
+        _site_obj = models.Site.objects.get(name=site)
         _site_warning = models.ClientWarning.objects.filter(site=_site_obj, datetime__range=(_range_from, _range_to))
         _site_status = models.ClientStatus.objects.filter(site=_site_obj, datetime__range=(_range_from, _range_to))
         _site_meta = models.DailyReport_Meta.objects.filter(site=_site_obj).order_by("date", "id")
@@ -424,56 +432,91 @@ def _get_daily_data(_from=datetime.datetime.now(), _to=datetime.datetime.now(), 
     if _r_end_date_ is not None:
         _to = datetime.datetime.strptime(_r_end_date_, '%m/%d/%Y')
     if _site_name is None or _site_name == '全部':
-        _all_site_ = [x.code for x in models.Site.objects.all().order_by('order')]
+        _all_site_ = [x.name for x in models.Site.objects.all().order_by('order')]
     else:
-        _all_site_ = [models.Site.objects.get(name=_site_name).code]
+        try:
+            _all_site_ = [models.Site.objects.get(name=_site_name).name]
+        except:
+            _all_site_ = [models.Site.objects.get(code=_site_name).name]
     _all_data_ = models.DailyReport.objects.filter(date__range=(_from, _to))
-    _sitenames_dailyreport = [models.Site.objects.get(id=x['site']).code for x in
+    _sitenames_dailyreport = [models.Site.objects.get(id=x['site']).name for x in
                               _all_data_.values('site').distinct()]
     for site in _all_site_:
-        _site_obj = models.Site.objects.get(code=site)
+        _site_obj = models.Site.objects.get(name=site)
         if site in _sitenames_dailyreport: # 有日报表数据
-            _site_data_ = _all_data_
+            _site_data_is_confirm = None
+            _site_data_reasons = None
             if _is_confirm is True:
-                _site_data_ = _site_data_.filter(site=_site_obj, status=True)
+                _site_data_is_confirm = _all_data_.filter(site=_site_obj, status=True)
             else:
-                _site_data_ = _site_data_.filter(site=_site_obj)
+                _site_data_is_confirm = _all_data_.filter(site=_site_obj)
             if _reasons is None or len(_reasons) == 0 or '全部' in _reasons:
                 pass
             else:
-                _site_data_ = _site_data_.filter(reason__name__in=_reasons)
-            for data in _site_data_:
+                _site_data_reasons = _all_data_.filter(reason__name__in=_reasons)
+            ret_data = set(_all_data_)
+            if _site_data_is_confirm is not None:
+                ret_data = ret_data & set(_site_data_is_confirm)
+            if _site_data_reasons is not None:
+                ret_data = ret_data & set(_site_data_reasons)
+
+            for data in ret_data:
                 carriages_count = data.carriages_count
                 warn = data.warn
                 _data_meta = models.DailyReport_Meta.objects.filter(site=_site_obj, date=data.date)
+                # 0 id
+                # 1 站名
+                # 2 过车数
+                # 3 报警统计
+                # 4 问题
+                # 5 问题追踪
+                # 6 问题分类
+                # 7 记录发布状态
+                # 8 记录日期
+                # 9 所属路局
+
                 if len(_data_meta) > 0:
                     _return.append(
                         [
+                            data.id,
                             _site_obj.name,
                             carriages_count,
                             warn,
                             _data_meta.last().problem,
                             _data_meta.last().track,
-                            data.id,
-                            data.status,
                             '、'.join([x['name'] for x in data.reason.all().values('name')]),
+                            data.status,
                             _datetime_format(date=data.date, mode=3),
-                            _site_obj.bureau,
+                            _site_obj.bureau
                         ]
                     )
+                    # _return.append(
+                    #     [
+                    #         _site_obj.name,
+                    #         carriages_count,
+                    #         warn,
+                    #         _data_meta.last().problem,
+                    #         _data_meta.last().track,
+                    #         data.id,
+                    #         data.status,
+                    #         '、'.join([x['name'] for x in data.reason.all().values('name')]),
+                    #         _datetime_format(date=data.date, mode=3),
+                    #         _site_obj.bureau,
+                    #     ]
+                    # )
                 else:
                     _return.append(
                         [
+                            data.id,
                             _site_obj.name,
                             carriages_count,
                             warn,
                             '无',
                             '无',
-                            data.id,
-                            data.status,
                             '、'.join([x['name'] for x in data.reason.all().values('name')]),
-                            _datetime_format(date=data.date, mode=3),
-                            _site_obj.bureau,
+                            data.status,
+                            data.date,
+                            _site_obj.bureau
                         ]
                     )
     return _return
@@ -483,11 +526,6 @@ def _search_session(request):
     pass
 
 
-global _r_start_date_, _r_end_date_, _r_site_, _r_reasons_
-_r_start_date_ = None
-_r_end_date_ = None
-_r_site_ = None
-_r_reasons_ = None
 
 
 def _init_global():
@@ -510,30 +548,48 @@ def daily_manage_search(request):
     _r_reasons_ = r_reasons
     _from = datetime.datetime.strptime(r_start_date, '%m/%d/%Y')
     _to = datetime.datetime.strptime(r_end_date, '%m/%d/%Y')
-    _sites = ['全部'] + [x.name for x in models.Site.objects.all().order_by('order')]
-    _reasons = ['全部'] + [x.name for x in models.Reason.objects.all()]
+    _sites_name = [x.name for x in models.Site.objects.all().order_by('order')]
+    _reasons = [x.name for x in models.Reason.objects.all()]
 
-    if r_site == '全部':
-        all_data = _get_daily_data(_from=_from, _to=_to, _reasons=r_reasons)
-    else:
-        all_data = _get_daily_data(_from=_from, _to=_to, _site_name=r_site,  _reasons=r_reasons)
+
+
+    # global _r_start_date_, _r_end_date_ , _r_site_, _r_reasons_
+    # _response_data = request.POST['data'].split('@@@@@')
+    # r_site = _response_data[0]
+    # _r_site_ = r_site
+    # r_start_date = _response_data[1]
+    # _r_start_date_ = r_start_date
+    # r_end_date = _response_data[2]
+    # _r_end_date_ = r_end_date
+    # r_reasons = _response_data[3]
+    #
+    # _r_reasons_ = r_reasons.split(',')
+    # _from = datetime.datetime.strptime(r_start_date, '%m/%d/%Y')
+    # _to = datetime.datetime.strptime(r_end_date, '%m/%d/%Y')
+    _sites_code = [x.code for x in models.Site.objects.all().order_by('order')]
+    # _sites_name = [x.name for x in models.Site.objects.all().order_by('order')]
+    # _reasons = [x.name for x in models.Reason.objects.all()]
+    all_data = _get_daily_data(_from=_from, _to=_to, _site_name=r_site,  _reasons=r_reasons)
 
 
     return render_to_response(
         'base.html',
         {
             'box_content': _redirect(
-                'daily_manage',
+                'daily_manage_lab',
                 {
                     'title': _datetime_format(date=_to),
                     'data': all_data,
                     'date_now': _datetime_format(mode=3),
-                    'all_site': _sites,
-                    'error_reason': _reasons,
-                    'q_site': r_site,
-                    'q_reason': r_reasons,
-                    'q_start_date': r_start_date,
-                    'q_end_date': r_end_date,
+                    'all_site': json.dumps(_sites_name),
+                    'all_site_old': ['全部'] +_sites_name,
+                    'all_site_code': ['全部'] + _sites_code,
+                    'error_reason': json.dumps(_reasons),
+                    'error_reason_old': _reasons,
+                    'q_site': '全部' if _r_site_ is None else _r_site_,
+                    'q_reason': json.dumps(list()) if _r_reasons_ is None else json.dumps(_r_reasons_),
+                    'q_start_date': _datetime_format(mode=3) if _r_start_date_ is None else _r_start_date_,
+                    'q_end_date': _datetime_format(mode=3) if _r_end_date_ is None else _r_end_date_,
                 }
             ),
             'user': request.user,
@@ -617,21 +673,21 @@ def daily_view(request, _date=datetime.datetime.now()):
 
 @login_required
 def daily_manage(request, _date=datetime.datetime.now(), init_global=True, loc=None):
-    _js = r"""<script src="/static/js/location.js"></script>"""
+    # _js = r"""<script src="/static/js/location.js"></script>"""
     if init_global:
         _init_global()
     _range_from, _range_to = _get_range_date(_date)
     _sites = ['全部'] + [x.code for x in models.Site.objects.all().order_by('order')]
-    _reasons = ['全部'] + [x.name for x in models.Reason.objects.all()]
+    _reasons = ['全部'] + [x.name for x in models.Reason.objects.all().order_by('name')]
 
-    all_data = _get_daily_data()
+    all_data = _get_daily_data(_from=_range_from, _to=_range_to)
     return render_to_response(
         'base.html',
         {
             'box_content': _redirect(
                 'daily_manage',
                 {
-                    'title': _datetime_format(date=_range_to),
+                    'title': _datetime_format(date=_range_from) + '~' + _datetime_format(date=_range_to),
                     'data': all_data,
                     'date_now': _datetime_format(mode=3),
                     'all_site': _sites,
@@ -645,7 +701,45 @@ def daily_manage(request, _date=datetime.datetime.now(), init_global=True, loc=N
                 }
             ),
             'user': request.user,
-            'body_script': _js,
+            # 'body_script': _js,
+        }
+    )
+
+@login_required
+def daily_manage_lab(request, _date=datetime.datetime.now(), init_global=True, loc=None):
+    # _js = r"""<script src="/static/js/location.js"></script>"""
+    if init_global:
+        _init_global()
+    _range_from, _range_to = _get_range_date(_date)
+    _sites_code = [x.code for x in models.Site.objects.all().order_by('order')]
+    _sites_name = [x.name for x in models.Site.objects.all().order_by('order')]
+    _reasons = [x.name for x in models.Reason.objects.all().order_by('name')]
+
+    all_data = _get_daily_data(_from=_range_from, _to=_range_to)
+    return render_to_response(
+        'base.html',
+        {
+            'box_content': _redirect(
+                'daily_manage_lab',
+                {
+                    'title': _datetime_format(date=_range_from) + '~' + _datetime_format(date=_range_to),
+                    'data': all_data,
+                    'date_now': _datetime_format(mode=3),
+                    'all_site': json.dumps(_sites_name),
+                    'all_site_old': ['全部'] +_sites_name,
+                    'all_site_code': ['全部'] + _sites_code,
+                    'error_reason': json.dumps(_reasons),
+                    'error_reason_old': _reasons,
+                    'q_site': '全部' if _r_site_ is None else _r_site_,
+                    'q_reason': json.dumps(list()) if _r_reasons_ is None else json.dumps(_r_reasons_),
+                    'q_start_date': _datetime_format(mode=3) if _r_start_date_ is None else _r_start_date_,
+                    'q_end_date': _datetime_format(mode=3) if _r_end_date_ is None else _r_end_date_,
+                    'loc': int(loc) if loc is not None else None,
+
+                }
+            ),
+            'user': request.user,
+            # 'body_script': _js,
         }
     )
 
@@ -663,15 +757,14 @@ def daily_ajax_search(request):
         return HttpResponse(None)
 
 def daily_create_single(request):
-    # _site = request.POST['r_site']
     _site_obj = models.Site.objects.all().first()
-    # _site_obj = models.Site.objects.get(code=_site)
     _meta_obj = models.DailyReport_Meta.objects.filter(site=_site_obj.id)
     return daily_edit(request, _site=_site_obj.name, _site_problem=_meta_obj.last().problem if len(_meta_obj)>0 else "无", _site_track=_meta_obj.last().track  if len(_meta_obj)>0 else "无")
 
 def daily_create_all(request):
     _auto_create_daily_info()
-    return daily_manage(request)
+    return HttpResponseRedirect(reverse('daily_manage_lab'))
+    # return daily_manage(request)
 
 def daily_copy(request, _id):
     return daily_edit(request, _id=_id, _is_copy=True)
@@ -679,35 +772,49 @@ def daily_copy(request, _id):
 def daily_delete(request, _id):
     obj = models.DailyReport.objects.get(id=_id)
     obj.delete()
-    return daily_manage(request, init_global=False)
+    return daily_manage_lab(request, init_global=False)
 
 def daily_confirm(request, _id):
     obj = models.DailyReport.objects.get(id=_id)
     obj.status = True
     obj.save()
-    return daily_manage(request, init_global=False, loc=_id)
+    return daily_manage_lab(request, init_global=False, loc=_id)
 
 
 def daily_unconfirm(request, _id):
     obj = models.DailyReport.objects.get(id=_id)
     obj.status = False
     obj.save()
-    return daily_manage(request, init_global=False, loc=_id)
+    return daily_manage_lab(request, init_global=False, loc=_id)
 
 
-def _save_dailyreport(self, dailyreport_id, site, date, warn=None, carriages=None, imgs=None):
+def _save_dailyreport(dailyreport_id, site=None, date=None, warn=None, carriages=None, imgs=None):
     if dailyreport_id is None:
-        _new = models.DailyReport(
-            date=date,
-            site=site,
-            warn=warn if warn is not None else "",
-            carriages_count=carriages if carriages is not None else "",
-            imgs=imgs if imgs is not None else ""
-        )
-        _new.save()
-        return _new.id
+        if site is not None:
+            try:
+                site = models.Site.objects.get(name=site)
+            except Exception as e:
+                _order = models.Site.objects.all().last().order + 1
+                site = models.Site.objects.create(name=site, order=_order)
+            _new = models.DailyReport(
+                date=date if date is not None else datetime.datetime.now(),
+                site=site,
+                warn=warn if warn is not None else "",
+                carriages_count=carriages if carriages is not None else "",
+                imgs=imgs if imgs is not None else "".encode()
+            )
+            _new.save()
+            return _new.id
+        else:
+            return -1
     else:
         dailyreport_obj = models.DailyReport.objects.get(id=dailyreport_id)
+        site = models.Site.objects.get(name=site)
+
+        if site is not None:
+            dailyreport_obj.site = site
+        if date is not None:
+            dailyreport_obj.date = date
         if warn is not None:
             dailyreport_obj.warn = warn
         if carriages is not None:
@@ -718,7 +825,7 @@ def _save_dailyreport(self, dailyreport_id, site, date, warn=None, carriages=Non
         return dailyreport_obj.id
 
 
-def _save_dailyreportmeta(self, date, site, problem, track):
+def _save_dailyreportmeta(date, site, problem, track):
     _new = models.DailyReport_Meta(
         date=date,
         site=site,
@@ -727,36 +834,39 @@ def _save_dailyreportmeta(self, date, site, problem, track):
     )
     _new.save()
 
-def _save_dailyreportreason(self, dailyreport_id, reason):
-    _reasons = [models.Reason.objects.get(
-        name=x) for x in reason]
+def _save_dailyreportreason(dailyreport_id, reason):
     _dailyreport_obj = models.DailyReport.objects.get(id=dailyreport_id)
-    _dailyreport_obj.reason.clear();
+    _dailyreport_obj.reason.clear()
+    _reasons = [models.Reason.objects.get(
+        name=x) for x in reason if x != '']
     for r in _reasons:
         _dailyreport_obj.reason.add(r)
+    _dailyreport_obj.save()
 
 
-def daily_save(request, _id):
+def daily_save_data(request):
     try:
-        _site = models.Site.objects.get(name=str(request.POST['r_sites']))
-        _date = datetime.datetime.strptime(request.POST['r_date'], '%m/%d/%Y')
-        _carriages = int(request.POST['r_carriages'])
-        _imgs = str(request.POST['r_remark']).encode()
-        _warn = str(request.POST['r_warning'])
-        _problem = request.POST['r_problem']
-        _track = request.POST['r_track']
-        _reason = request.POST.getlist('r_reason')
+        request_data = request.POST['data'].split('@@@@@')
+        _id = request_data[0]
+        _site = request_data[1]
+        _carriages = request_data[2]
+        _warn = request_data[3]
+        _problem = request_data[4]
+        _track = request_data[5]
+        _reason = [x.strip() for x in str(request_data[6]).split('、')]
+
+
+
         id = _save_dailyreport(
-            _id if _id != '-1' else None,
-            _site,
-            _date,
+            _id if _id != 'new' else None,
+            site=_site,
+            date=datetime.datetime.now() if _id =='new' else None,
             carriages=_carriages,
-            warn=_warn,
-            imgs=_imgs
+            warn=_warn
         )
         _save_dailyreportmeta(
-            _date,
-            _site,
+            datetime.datetime.now(),
+            models.Site.objects.get(name=_site),
             _problem,
             _track
         )
@@ -764,16 +874,20 @@ def daily_save(request, _id):
             id,
             _reason
         )
-    except Exception as e:
-        pass
+        return HttpResponse(True)
+    except:
+        return HttpResponse(False)
 
-    return daily_manage(request, loc=_id)
+
+def daily_get_pic(request):
+    _id = request.POST['id']
+    _dr = models.DailyReport.objects.get(id=_id)
+    return HttpResponse(str(_dr.imgs, encoding='utf-8'))
+
 
 
 def daily_detail_img(request, _id):
     _data_info = models.DailyReport.objects.get(id=_id)
-    _range_from, _range_to = _get_range_date(datetime.datetime.now())
-
     _title = _datetime_format(date=_data_info.date)
     _r = str(_data_info.imgs, encoding='utf-8')
 
@@ -794,8 +908,7 @@ def daily_detail_img(request, _id):
 
 def daily_edit(request, _id=None, _site=None,  _site_problem='无', _site_track='无', _is_copy=False):
     _js = r"""<script src="/static/js/daily_edit.js"></script>"""
-    _range_from, _range_to = _get_range_date(datetime.datetime.now())
-    _reasons = [x.name for x in models.Reason.objects.all()]
+    _reasons = [x.name for x in models.Reason.objects.all().order_by('name')]
     _data_ = list()
     _sites = [x.name for x in models.Site.objects.all()]
 
@@ -870,9 +983,6 @@ def _get_range_date(date, _startwith=8):
                                                '%Y-%m-%d %H:%M:%S')
 
     return _start_date, _end_date
-
-def test_test(request):
-    return HttpResponse(content=b'haha')
 
 #
 # def warning_detail(request, _date, _site, _algo, _line, _err_type):
@@ -990,23 +1100,36 @@ def test_test(request):
 #         return warning_page(request)
 
 def daily_delete_selected(request):
-    ids = [int(x) for x in request.POST['selected'].split(',')[1:]]
+    ids = [int(x.split('_')[1]) for x in request.POST['data'].split('@@@@@')[1:]]
     models.DailyReport.objects.filter(id__in=ids).delete()
-    return daily_manage(request, init_global=False)
+    return daily_manage_lab(request, init_global=False)
 
 def daily_confirm_selected(request):
-    ids = [int(x) for x in request.POST['selected'].split(',')[1:]]
+    ids = [int(x.split('_')[1]) for x in request.POST['data'].split('@@@@@')[1:]]
     for dr in models.DailyReport.objects.filter(id__in=ids):
         dr.status = True
         dr.save()
-    return daily_manage(request, init_global=False)
+    return daily_manage_lab(request, init_global=False)
 
 def daily_unconfirm_selected(request):
-    ids = [int(x) for x in request.POST['selected'].split(',')[1:]]
+    ids = [int(x.split('_')[1]) for x in request.POST['data'].split('@@@@@')[1:]]
     for dr in models.DailyReport.objects.filter(id__in=ids):
         dr.status = False
         dr.save()
-    return daily_manage(request, init_global=False)
+    return daily_manage_lab(request, init_global=False)
+
+def daily_save_pic(request):
+    try:
+        drObjId = request.POST['data'].split('@@@@@')[0]
+        contents = request.POST['data'].split('@@@@@')[1]
+        obj = models.DailyReport.objects.get(id=drObjId)
+        obj.imgs = str(contents).encode()
+        obj.save()
+        return HttpResponse(True)
+    except:
+        return HttpResponse(False)
+
+
 
 def daily_all_confirm(request):
     x = datetime.datetime.now() if _r_start_date_ is None else datetime.datetime.strptime(_r_start_date_, '%m/%d/%Y')
@@ -1015,7 +1138,7 @@ def daily_all_confirm(request):
     for data in _data_:
         data.status = True
         data.save()
-    return daily_manage(request, init_global=False)
+    return daily_manage_lab(request, init_global=False)
 
 def daily_all_unconfirm(request):
     x = datetime.datetime.now() if _r_start_date_ is None else datetime.datetime.strptime(_r_start_date_, '%m/%d/%Y')
@@ -1024,7 +1147,13 @@ def daily_all_unconfirm(request):
     for data in _data_:
         data.status = False
         data.save()
-    return daily_manage(request, init_global=False)
+    return daily_manage_lab(request, init_global=False)
+
+def daily_all_delete(request):
+    x = datetime.datetime.now() if _r_start_date_ is None else datetime.datetime.strptime(_r_start_date_, '%m/%d/%Y')
+    y = datetime.datetime.now() if _r_end_date_ is None else datetime.datetime.strptime(_r_end_date_, '%m/%d/%Y')
+    models.DailyReport.objects.filter(date__range=(x, y)).delete()
+    return daily_manage_lab(request, init_global=False)
 
 
 def data_init(request):

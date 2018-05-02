@@ -1,5 +1,4 @@
 document.addEventListener('paste', function (event) {
-    console.log(event)
     var isChrome = false;
     if ( event.clipboardData || event.originalEvent ) {
       //not for ie11  某些chrome版本使用的是event.originalEvent
@@ -28,31 +27,30 @@ document.addEventListener('paste', function (event) {
         //在items里找粘贴的image,据上面分析,需要循环  
         for (var i = 0; i < len; i++) {
           if (items[i].type.indexOf("image") !== -1) {
-            // console.log(items[i]);
-            // console.log( typeof (items[i]));
-   
-            //getAsFile() 此方法只是living standard firefox ie11 并不支持        
+            //getAsFile() 此方法只是living standard firefox ie11 并不支持
             blob = items[i].getAsFile();
           }
         }
         if ( blob !== null ) {
           var reader = new FileReader();
-          reader.onload = function (event) {
+          // reader.readAsBinaryString(blob);
+          reader.onload = function (e) {
             // event.target.result 即为图片的Base64编码字符串
-            var base64_str = event.target.result
+            var base64_str = e.target.result;
             var new_img=document.createElement('img');
             new_img.src=base64_str;
-            document.getElementById("remark").appendChild(new_img);
+            // document.getElementsByTagName("div").appendChild(new_img);
+            event.srcElement.appendChild(new_img);
             //可以在这里写上传逻辑 直接将base64编码的字符串上传（可以尝试传入blob对象，看看后台程序能否解析）
             // uploadImgFromPaste(base64_str, 'paste', isChrome);
           }
-          reader.readAsDataURL(blob); 
+          reader.readAsDataURL(blob);
         }
       } else {
         //for firefox
         setTimeout(function () {
           //设置setTimeout的原因是为了保证图片先插入到div里，然后去获取值
-          var imgList = document.querySelectorAll('#remark img'),
+          var imgList = document.querySelectorAll('div img'),
             len = imgList.length,
             src_str = '',
             i;
@@ -81,6 +79,18 @@ document.addEventListener('paste', function (event) {
       }, 1);
     }
   })
+
+function getBase64Image(img) {
+    var canvas = document.createElement("canvas");
+    canvas.width = img.width;
+    canvas.height = img.height;
+
+    var ctx = canvas.getContext("2d");
+    ctx.drawImage(img, 0, 0, img.width, img.height);
+    var ext = img.src.substring(img.src.lastIndexOf(".")+1).toLowerCase();
+    var dataURL = canvas.toDataURL("image/"+ext);
+    return dataURL;
+}
    
   function uploadImgFromPaste (file, type, isChrome) {
     var formData = new FormData();

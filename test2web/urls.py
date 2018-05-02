@@ -32,10 +32,11 @@ urlpatterns = [
             url(r'^add_data/$', import_data, name='import_data'),
             url(r'^daily_view/$', daily_view, name='daily_view'), # 展示
             url(r'^daily_manage/$', daily_manage, name='daily_manage'), # 展示
+            url(r'^daily_manage_lab/$', daily_manage_lab, name='daily_manage_lab'), # 展示
             url(r'^daily_view_search/$', daily_view_search, name='daily_view_search'), # 展示
             url(r'^daily_manage_search/$', daily_manage_search, name='daily_manage_search'), # 展示
             url(r'^daily_edit/(.*)/$', daily_edit, name='daily_edit'),
-            url(r'^daily_save/(.*)/$', daily_save, name='daily_save'),
+            url(r'^daily_save_data/$', daily_save_data, name='daily_save_data'),
             url(r'^daily_confirm/(.*)/$', daily_confirm, name='daily_confirm'),
             url(r'^daily_delete/(.*)/$', daily_delete, name='daily_delete'),
             url(r'^daily_copy/(.*)/$', daily_copy, name='daily_copy'),
@@ -47,11 +48,13 @@ urlpatterns = [
             url(r'^daily_ajax_search/$', daily_ajax_search, name='daily_ajax_search'),
             url(r'^daily_all_confirm/$', daily_all_confirm, name='daily_all_confirm'),
             url(r'^daily_all_unconfirm/$', daily_all_unconfirm, name='daily_all_unconfirm'),
+            url(r'^daily_all_delete/$', daily_all_delete, name='daily_all_delete'),
             url(r'^daily_delete_selected/$', daily_delete_selected, name='daily_delete_selected'),
             url(r'^daily_confirm_selected/$', daily_confirm_selected, name='daily_confirm_selected'),
             url(r'^daily_unconfirm_selected/$', daily_unconfirm_selected, name='daily_unconfirm_selected'),
+            url(r'^daily_save_pic/$', daily_save_pic, name='daily_save_pic'),
+            url(r'^daily_get_pic/$', daily_get_pic, name='daily_get_pic'),
 
-            url(r'^test_test/$', test_test, name='test_test'),
             url(r'^data_init/$', data_init, name='data_init'),
             url(r'^admin/', admin.site.urls, name='admin'),
             url(r'^$', login),
