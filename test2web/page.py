@@ -710,19 +710,19 @@ def daily_manage_lab(request, _date=datetime.datetime.now(), init_global=True, l
     # _js = r"""<script src="/static/js/location.js"></script>"""
     if init_global:
         _init_global()
-    _range_from, _range_to = _get_range_date(_date)
+    # _range_from, _range_to = _get_range_date(_date)
     _sites_code = [x.code for x in models.Site.objects.all().order_by('order')]
     _sites_name = [x.name for x in models.Site.objects.all().order_by('order')]
     _reasons = [x.name for x in models.Reason.objects.all().order_by('name')]
 
-    all_data = _get_daily_data(_from=_range_from, _to=_range_to)
+    all_data = _get_daily_data()
     return render_to_response(
         'base.html',
         {
             'box_content': _redirect(
                 'daily_manage_lab',
                 {
-                    'title': _datetime_format(date=_range_from) + '~' + _datetime_format(date=_range_to),
+                    'title': _datetime_format(date=_date),
                     'data': all_data,
                     'date_now': _datetime_format(mode=3),
                     'all_site': json.dumps(_sites_name),
