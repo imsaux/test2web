@@ -156,6 +156,10 @@ function getfocus(id, sp){
     }
 };
 
+function data_save(){
+    var oo = document.getElementById()
+}
+
 function lostfocus(id, sp, needReturn){
     var td = document.getElementById(id);
     if(td.children.length>0 && td.children[0].nodeName!=sp){
@@ -179,7 +183,6 @@ function lostfocus(id, sp, needReturn){
         }
     }
 };
-
 
 function build_pic_div(ele){
     var _div_id = "div_"+String(ele.id);
@@ -247,12 +250,6 @@ function save_pic(id){
             'data': contents,
         },
         success: function (ret) {
-
-        if(ret=="True"){
-            alert("保存成功!");
-        }else{
-            alert("保存失败!");
-        }
         }});
 };
 
@@ -395,12 +392,6 @@ function save_data(id){
         'data': contents,
     },
     success: function (ret) {
-
-        if(ret=="True"){
-            alert("保存成功!");
-        }else{
-            alert("保存失败!");
-        }
     }});
 };
 
@@ -443,7 +434,7 @@ function search_data(){
                 <thead>
                     <tr>
                         <td colspan="8">
-                            <a href="#" onclick="create_new()"  class="btn btn-success">
+                            <a href="javascript:void(0)" onclick="create_new()"  class="btn btn-success">
                                 <i class="icon-envelope"></i>
                                 <span class="hidden-tablet"> 新增</span>
                             </a>
@@ -508,12 +499,12 @@ function search_data(){
                             {{ item.6 }}
                             </td>
                             <td class="center"  style="width:10%;">
-                                <a href="#" onclick="save_data({{ item.0 }})" title="保存" class="btn btn-success">
+                                <a href="javascript:void(0)" onclick="save_data({{ item.0 }})" title="保存" class="btn btn-success">
                                     <i class="icon-envelope"></i>
                                     <span class="hidden-tablet"> 保存</span>
                                 </a>
                                 <br><br>
-                                <a id="{{ item.0 }}" href="#" onclick="build_pic_div(this)" title="图片" class="btn btn-success">
+                                <a id="{{ item.0 }}" href="javascript:void(0)" onclick="build_pic_div(this)" title="图片" class="btn btn-success">
                                     <i class="icon-envelope"></i>
                                     <span class="hidden-tablet"> 图片</span>
                                 </a>
@@ -541,7 +532,7 @@ function search_data(){
 
                 <tr>
                     <td colspan="8">
-                        <a href="#" onclick="create_new()"  class="btn btn-success">
+                        <a href="javascript:void(0)" onclick="create_new()"  class="btn btn-success">
                             <i class="icon-envelope"></i>
                             <span class="hidden-tablet"> 新增</span>
                         </a>
