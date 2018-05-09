@@ -38,7 +38,9 @@ class UserRegisterForm(forms.Form):
     password = forms.CharField(label='密码', widget=forms.PasswordInput())
     is_staff = forms.BooleanField(label='管理员权限', widget=forms.CheckboxInput(), required=False)
 
-def _datetime_format(date=datetime.datetime.now(), mode=1):
+def _datetime_format(date=None, mode=1):
+    if date is None:
+        date = datetime.datetime.now()
     if mode == 1:
         return str(date.year) + '年' + str(date.month) + '月' + str(date.day) + '日'
     elif mode == 2:
@@ -172,9 +174,11 @@ def export_xlsx(request):
     wb.save(_file_name)
     return file_download(request, _file_name)
 
-def _auto_create_daily_info(date=datetime.datetime.now()):
+def _auto_create_daily_info(date=None):
     # 自动创建
     _all_site_ = [x.name for x in models.Site.objects.all().order_by('order')]
+    if date is None:
+        date = datetime.datetime.now()
     _range_from, _range_to = _get_range_date(date)
     for site in _all_site_:
         _site_obj = models.Site.objects.get(name=site)
@@ -234,8 +238,12 @@ def _auto_create_daily_info(date=datetime.datetime.now()):
             _new_meta.save()
 
 
-def _get_daily_data(_from=datetime.datetime.now(), _to=datetime.datetime.now(), _site_name=None, _reasons=None, _is_confirm=False):
+def _get_daily_data(_from=None, _to=None, _site_name=None, _reasons=None, _is_confirm=False):
     _return = list()
+    if _from is None:
+        _from = datetime.datetime.now()
+    if _to is None:
+        _to = datetime.datetime.now()
     if _r_reasons_ is not None:
         _reasons = _r_reasons_
     if _r_site_ is not None:
@@ -434,9 +442,10 @@ def daily_view_search(request):
 
 
 
-def daily_view(request, _date=datetime.datetime.now()):
+def daily_view(request, _date=None):
     log.info("daily_view > start")
-
+    if _date is None:
+        _date = datetime.datetime.now()
     # _range_from, _range_to = _get_range_date(_date)
     _init_global()
     _sites = ['全部'] + [x.name for x in models.Site.objects.all().order_by('order')]
@@ -498,10 +507,12 @@ def daily_manage(request, _date=datetime.datetime.now(), init_global=True, loc=N
     )
 
 @login_required
-def daily_manage_lab(request, _date=datetime.datetime.now(), init_global=True, loc=None):
+def daily_manage_lab(request, _date=None, init_global=True, loc=None):
     log.info("daily_manage_lab > start")
     log.info(_date)
     log.info(datetime.datetime.now())
+    if _date is None:
+        _date = datetime.datetime.now()
     if init_global:
         _init_global()
     # _range_from, _range_to = _get_range_date(_date)
