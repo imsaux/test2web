@@ -77,7 +77,7 @@ def VERSION(request):
 def login(request):
     log.info("login > start")
     log.info("login > 日期：" + _datetime_format(mode=5))
-    log.info("login > IP地址：" + request.META['REMOTE_ADDR'])
+    log.info("login > IP地址：" + repr(get_client_ip(request)))
     if request.method == 'POST':
         uf = UserForm(request.POST)
         if uf.is_valid():
@@ -523,6 +523,14 @@ def daily_manage_lab(request, _date=None, init_global=True, loc=None):
         }
     )
 
+def get_client_ip(request):
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[-1].strip()
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
+
 def daily_ajax_search(request):
     try:
         _site = request.POST['r_site']
@@ -711,7 +719,7 @@ def daily_delete_selected(request):
     ids = [int(x.split('_')[1]) for x in request.POST['data'].split('@@@@@')[1:]]
     models.DailyReport.objects.filter(id__in=ids).delete()
     log.info("daily_delete_selected > 用户（ " + request.user.username + ' )')
-    log.info("daily_delete_selected > IP地址：" + request.META['REMOTE_ADDR'])
+    log.info("daily_delete_selected > IP地址：" + repr(get_client_ip(request)))
     log.info("daily_delete_selected > 删除 ( " + repr(ids) + " )")
     return daily_manage_lab(request, init_global=False)
 
@@ -721,7 +729,7 @@ def daily_confirm_selected(request):
         dr.status = True
         dr.save()
     log.info("daily_confirm_selected > 用户（ " + request.user.username + ' )')
-    log.info("daily_confirm_selected > IP地址：" + request.META['REMOTE_ADDR'])
+    log.info("daily_confirm_selected > IP地址：" + repr(get_client_ip(request)))
     log.info("daily_confirm_selected > 发布 ( " + repr(ids) + " )")
         
     return daily_manage_lab(request, init_global=False)
@@ -732,7 +740,7 @@ def daily_unconfirm_selected(request):
         dr.status = False
         dr.save()
     log.info("daily_unconfirm_selected > 用户（ " + request.user.username + ' )')
-    log.info("daily_unconfirm_selected > IP地址：" + request.META['REMOTE_ADDR'])
+    log.info("daily_unconfirm_selected > IP地址：" + repr(get_client_ip(request)))
     log.info("daily_unconfirm_selected > 取消发布 ( " + repr(ids) + " )")
 
     return daily_manage_lab(request, init_global=False)
@@ -758,7 +766,7 @@ def daily_all_confirm(request):
         data.status = True
         data.save()
     log.info("daily_all_confirm > 用户（ " + request.user.username + ' )')
-    log.info("daily_all_confirm > IP地址：" + request.META['REMOTE_ADDR'])
+    log.info("daily_all_confirm > IP地址：" + repr(get_client_ip(request)))
     log.info("daily_all_confirm > 发布 ( " + repr([x[0] for x in _data_.values_list('id')]) + " )")
 
     return daily_manage_lab(request, init_global=False)
@@ -771,14 +779,14 @@ def daily_all_unconfirm(request):
         data.status = False
         data.save()
     log.info("daily_all_unconfirm > 用户（ " + request.user.username + ' )')
-    log.info("daily_all_unconfirm > IP地址：" + request.META['REMOTE_ADDR'])
+    log.info("daily_all_unconfirm > IP地址：" + repr(get_client_ip(request)))
     log.info("daily_all_unconfirm > 取消发布 ( " + repr([x[0] for x in _data_.values_list('id')]) + " )")
 
     return daily_manage_lab(request, init_global=False)
 
 def daily_all_delete(request):
     log.info("daily_all_delete > 用户（ " + request.user.username + ' )')
-    log.info("daily_all_delete > IP地址：" + request.META['REMOTE_ADDR'])
+    log.info("daily_all_delete > IP地址：" + repr(get_client_ip(request)))
     x = datetime.datetime.now() if _r_start_date_ is None else datetime.datetime.strptime(_r_start_date_, '%m/%d/%Y')
     y = datetime.datetime.now() if _r_end_date_ is None else datetime.datetime.strptime(_r_end_date_, '%m/%d/%Y')
     delete_rows = models.DailyReport.objects.filter(date__range=(x, y))
