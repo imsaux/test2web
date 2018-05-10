@@ -483,7 +483,7 @@ def daily_view(request, _date=None):
 @login_required
 def daily_manage_lab(request, _date=None, init_global=True, loc=None):
     log.info("daily_manage_lab > 用户（ " + request.user.username + ' )')
-    log.info("daily_manage_lab > IP（ " + request.META['REMOTE_ADDR'] + ' )')
+    log.info("daily_manage_lab > IP地址：" + repr(get_client_ip(request)))
     log.info("daily_manage_lab > " + repr(_date) + ' , ' + repr(init_global) + ' , ' + repr(loc))
     if _date is None:
         _date = datetime.datetime.now()
