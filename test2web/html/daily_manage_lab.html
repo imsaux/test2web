@@ -384,15 +384,15 @@ function save_data(id){
             contents += "@@@@@" + ele.innerText;
         }
     }
-
-    $.ajax({
-    type: 'POST',
-    url: "/daily_save_data/",
-    data: {
-        'data': contents,
-    },
-    success: function (ret) {
-    }});
+    sel_post('/daily_save_data/', contents);
+    // $.ajax({
+    // type: 'POST',
+    // url: "/daily_save_data/",
+    // data: {
+    //     'data': contents,
+    // },
+    // success: function (ret) {
+    // }});
 };
 
 function search_data(){

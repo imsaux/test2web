@@ -49,6 +49,8 @@ def _datetime_format(date=None, mode=1):
         return date.strftime('%m/%d/%Y')
     elif mode == 4:
         return str(date.year) + '年' + str(date.month) + '月' + str(date.day) + '日 ' + str(date.hour).zfill(2) + ':' + str(date.minute).zfill(2) + ':' + str(date.second).zfill(2)
+    elif mode == 5:
+        return date.strftime('%Y%m%d')
 
 def _getLogger():
     logger = logging.getLogger('[web]')
@@ -57,7 +59,7 @@ def _getLogger():
     dirpath = os.path.abspath(os.path.dirname(this_file))
     if not os.path.exists(os.path.join(dirpath, 'log')):
         os.makedirs(os.path.join(dirpath, 'log'))
-    handler = logging.FileHandler(os.path.join(dirpath, 'log', _datetime_format(mode=2) + ".log"))
+    handler = logging.FileHandler(os.path.join(dirpath, 'log', _datetime_format(date=datetime.datetime.now(),mode=5) + ".log"))
 
     formatter = logging.Formatter('%(asctime)s %(name)-12s [line:%(lineno)d] %(levelname)-8s %(message)s')
     handler.setFormatter(formatter)
@@ -69,33 +71,37 @@ def _getLogger():
 
 log = _getLogger()
 
+def VERSION(request):
+    return HttpResponse('版本号：v20180510'.encode())
+
 def login(request):
     log.info("login > start")
-    log.info("login > " + _datetime_format(mode=2))
+    log.info("login > 日期：" + _datetime_format(mode=5))
+    log.info("login > IP地址：" + request.META['REMOTE_ADDR'])
     if request.method == 'POST':
         uf = UserForm(request.POST)
         if uf.is_valid():
             # 获取表单用户密码
             username = uf.cleaned_data['username']
             password = uf.cleaned_data['password']
-            log.info("login > " + username + "," + password)
+            log.info("login > " + username)
 
             # 获取的表单数据与数据库进行比较
             user = auth.authenticate(username=username, password=password)
             if user is not None and user.is_active:
                 auth.login(request, user)
                 if user.is_staff:
-                    log.info("login > end")
+                    log.info("login > 管理员")
                     return daily_manage_lab(request)
                 else:
-                    log.info("login > end")
+                    log.info("login > 访客")
                     return daily_view(request)
             else:
-                log.info("login > end")
+                log.info("login > 无效账户")
                 return HttpResponseRedirect('/login/')
     else:
         uf = UserForm()
-    log.info("login > end")
+    log.info("login > 未注册")
     return render_to_response('login.html', {'uf': uf})
 
 def register(request):
@@ -443,7 +449,9 @@ def daily_view_search(request):
 
 
 def daily_view(request, _date=None):
-    log.info("daily_view > start")
+    log.info("daily_view > 用户（ " + request.user.username + ' )')
+    log.info("daily_view > IP（ " + request.META['REMOTE_ADDR'] + ' )')
+    log.debug("daily_view > " + repr(_date))
     if _date is None:
         _date = datetime.datetime.now()
     # _range_from, _range_to = _get_range_date(_date)
@@ -451,7 +459,6 @@ def daily_view(request, _date=None):
     _sites = ['全部'] + [x.name for x in models.Site.objects.all().order_by('order')]
     _all_data_ = _get_daily_data(_from=_date, _to=_date, _is_confirm=True)
     _reasons = ['全部'] + [x.name for x in models.Reason.objects.all()]
-    log.info("daily_view > end")
     return render_to_response(
         'base.html',
         {
@@ -474,43 +481,10 @@ def daily_view(request, _date=None):
     )
 
 @login_required
-def daily_manage(request, _date=datetime.datetime.now(), init_global=True, loc=None):
-    if init_global:
-        _init_global()
-    _range_from, _range_to = _get_range_date(_date)
-    _sites = ['全部'] + [x.code for x in models.Site.objects.all().order_by('order')]
-    _reasons = ['全部'] + [x.name for x in models.Reason.objects.all().order_by('name')]
-
-    all_data = _get_daily_data(_from=_range_from, _to=_range_to)
-    return render_to_response(
-        'base.html',
-        {
-            'box_content': _redirect(
-                'daily_manage',
-                {
-                    'title': _datetime_format(date=_range_from) + '~' + _datetime_format(date=_range_to),
-                    'data': all_data,
-                    'date_now': _datetime_format(mode=3),
-                    'all_site': _sites,
-                    'error_reason': _reasons,
-                    'q_site': '全部' if _r_site_ is None else _r_site_,
-                    'q_reason': list() if _r_reasons_ is None else _r_reasons_,
-                    'q_start_date': _datetime_format(mode=3) if _r_start_date_ is None else _r_start_date_,
-                    'q_end_date': _datetime_format(mode=3) if _r_end_date_ is None else _r_end_date_,
-                    'loc': int(loc) if loc is not None else None,
-
-                }
-            ),
-            'user': request.user,
-            # 'body_script': _js,
-        }
-    )
-
-@login_required
 def daily_manage_lab(request, _date=None, init_global=True, loc=None):
-    log.info("daily_manage_lab > start")
-    log.info(_date)
-    log.info(datetime.datetime.now())
+    log.info("daily_manage_lab > 用户（ " + request.user.username + ' )')
+    log.info("daily_manage_lab > IP（ " + request.META['REMOTE_ADDR'] + ' )')
+    log.info("daily_manage_lab > " + repr(_date) + ' , ' + repr(init_global) + ' , ' + repr(loc))
     if _date is None:
         _date = datetime.datetime.now()
     if init_global:
@@ -521,7 +495,6 @@ def daily_manage_lab(request, _date=None, init_global=True, loc=None):
     _reasons = [x.name for x in models.Reason.objects.all().order_by('name')]
 
     all_data = _get_daily_data()
-    log.info("daily_manage_lab > end")
     return render_to_response(
         'base.html',
         {
@@ -564,21 +537,30 @@ def daily_ajax_search(request):
         return HttpResponse(None)
 
 def daily_create_all(request):
+    log.info("daily_create_all > 用户（ " + request.user.username + ' )')
+    log.info("daily_create_all > 一键新增记录")
     _auto_create_daily_info()
     return HttpResponseRedirect(reverse('daily_manage_lab'))
 
 def daily_delete(request, _id):
+    log.info("daily_delete > 用户（ " + request.user.username + ' )')
+    log.info("daily_delete > 删除记录（ #" + repr(_id) + ' )')
     obj = models.DailyReport.objects.get(id=_id)
     obj.delete()
     return daily_manage_lab(request, init_global=False)
 
 def daily_confirm(request, _id):
+    log.info("daily_confirm > 用户（ " + request.user.username + ' )')
+    log.info("daily_confirm > 发布记录（ #" + repr(_id) + ' )')
     obj = models.DailyReport.objects.get(id=_id)
     obj.status = True
     obj.save()
     return daily_manage_lab(request, init_global=False, loc=_id)
 
 def daily_unconfirm(request, _id):
+    log.info("daily_unconfirm > 用户（ " + request.user.username + ' )')
+    log.info("daily_unconfirm > 取消发布记录（ #" + repr(_id) + ' )')
+
     obj = models.DailyReport.objects.get(id=_id)
     obj.status = False
     obj.save()
@@ -639,7 +621,7 @@ def _save_dailyreportreason(dailyreport_id, reason):
     _dailyreport_obj.save()
 
 def daily_save_data(request):
-    log.info("daily_save_data > start")
+
     try:
         request_data = request.POST['data'].split('@@@@@')
         _id = request_data[0]
@@ -650,8 +632,7 @@ def daily_save_data(request):
         _track = request_data[5]
         _reason = [x.strip() for x in str(request_data[6]).split('、')]
 
-
-
+        log.info("daily_save_data > 用户（ " + request.user.username + ' )')
         id = _save_dailyreport(
             _id if _id != 'new' else None,
             site=_site,
@@ -669,16 +650,16 @@ def daily_save_data(request):
             id,
             _reason
         )
-        log.info("daily_save_data > 保存成功")
-        log.info("daily_save_data > end")
-        return HttpResponse(True)
+        log.info("daily_save_data > 保存成功 " + repr(_id) + " -> " + repr(id))
+        return daily_manage_lab(request, init_global=False)
     except:
-        log.info("daily_save_data > 保存失败")
-        log.info("daily_save_data > end")
-        return HttpResponse(False)
+        log.info("daily_save_data > 保存失败" + repr(_id) + " -> " + repr(id))
+        return daily_manage_lab(request, init_global=False)
 
 def daily_get_pic(request):
+    log.info("daily_get_pic > " + request.user.username)
     _id = request.POST['id']
+    log.info("daily_get_pic > 获取图片 > " + repr(_id))
     _dr = models.DailyReport.objects.get(id=_id)
     return HttpResponse(str(_dr.imgs, encoding='utf-8'))
 
@@ -727,21 +708,22 @@ def _get_range_date(date, _startwith=8):
     return _start_date, _end_date
 
 def daily_delete_selected(request):
-    log.info("daily_delete_selected > start")
-    log.info("daily_delete_selected > " + request.user.username)
-    log.info("daily_delete_selected > " + _datetime_format(mode=2))
     ids = [int(x.split('_')[1]) for x in request.POST['data'].split('@@@@@')[1:]]
     models.DailyReport.objects.filter(id__in=ids).delete()
-    log.info("daily_delete_selected > end")
+    log.info("daily_delete_selected > 用户（ " + request.user.username + ' )')
+    log.info("daily_delete_selected > IP地址：" + request.META['REMOTE_ADDR'])
+    log.info("daily_delete_selected > 删除 ( " + repr(ids) + " )")
     return daily_manage_lab(request, init_global=False)
 
 def daily_confirm_selected(request):
-    log.info("daily_confirm_selected > start")
     ids = [int(x.split('_')[1]) for x in request.POST['data'].split('@@@@@')[1:]]
     for dr in models.DailyReport.objects.filter(id__in=ids):
         dr.status = True
         dr.save()
-    log.info("daily_confirm_selected > end")
+    log.info("daily_confirm_selected > 用户（ " + request.user.username + ' )')
+    log.info("daily_confirm_selected > IP地址：" + request.META['REMOTE_ADDR'])
+    log.info("daily_confirm_selected > 发布 ( " + repr(ids) + " )")
+        
     return daily_manage_lab(request, init_global=False)
 
 def daily_unconfirm_selected(request):
@@ -749,6 +731,10 @@ def daily_unconfirm_selected(request):
     for dr in models.DailyReport.objects.filter(id__in=ids):
         dr.status = False
         dr.save()
+    log.info("daily_unconfirm_selected > 用户（ " + request.user.username + ' )')
+    log.info("daily_unconfirm_selected > IP地址：" + request.META['REMOTE_ADDR'])
+    log.info("daily_unconfirm_selected > 取消发布 ( " + repr(ids) + " )")
+
     return daily_manage_lab(request, init_global=False)
 
 def daily_save_pic(request):
@@ -771,6 +757,10 @@ def daily_all_confirm(request):
     for data in _data_:
         data.status = True
         data.save()
+    log.info("daily_all_confirm > 用户（ " + request.user.username + ' )')
+    log.info("daily_all_confirm > IP地址：" + request.META['REMOTE_ADDR'])
+    log.info("daily_all_confirm > 发布 ( " + repr([x[0] for x in _data_.values_list('id')]) + " )")
+
     return daily_manage_lab(request, init_global=False)
 
 def daily_all_unconfirm(request):
@@ -780,17 +770,21 @@ def daily_all_unconfirm(request):
     for data in _data_:
         data.status = False
         data.save()
+    log.info("daily_all_unconfirm > 用户（ " + request.user.username + ' )')
+    log.info("daily_all_unconfirm > IP地址：" + request.META['REMOTE_ADDR'])
+    log.info("daily_all_unconfirm > 取消发布 ( " + repr([x[0] for x in _data_.values_list('id')]) + " )")
+
     return daily_manage_lab(request, init_global=False)
 
 def daily_all_delete(request):
-    log.info("daily_all_delete > start")
-    log.info("daily_all_delete > " + _datetime_format(mode=2))
+    log.info("daily_all_delete > 用户（ " + request.user.username + ' )')
+    log.info("daily_all_delete > IP地址：" + request.META['REMOTE_ADDR'])
     x = datetime.datetime.now() if _r_start_date_ is None else datetime.datetime.strptime(_r_start_date_, '%m/%d/%Y')
     y = datetime.datetime.now() if _r_end_date_ is None else datetime.datetime.strptime(_r_end_date_, '%m/%d/%Y')
-    models.DailyReport.objects.filter(date__range=(x, y)).delete()
-    log.info("daily_all_delete > " + request.META['REMOTE_ADDR'])
-    log.info("daily_all_delete > " + request.user.username)
-    log.info("daily_all_delete > end")
+    delete_rows = models.DailyReport.objects.filter(date__range=(x, y))
+    log.info("daily_all_delete > 删除全部 ( " + repr([x[0] for x in delete_rows.values_list('id')]) + " )")
+    delete_rows.delete()
+    # models.DailyReport.objects.filter(date__range=(x, y)).delete()
     return daily_manage_lab(request, init_global=False)
 
 

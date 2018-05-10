@@ -21,7 +21,6 @@ from django.contrib import admin
 
 urlpatterns = [
             url(r'^daily_view/$', daily_view, name='daily_view'), # 展示
-            url(r'^daily_manage/$', daily_manage, name='daily_manage'), # 展示
             url(r'^daily_manage_lab/$', daily_manage_lab, name='daily_manage_lab'), # 展示
             url(r'^daily_view_search/$', daily_view_search, name='daily_view_search'), # 展示
             url(r'^daily_manage_search/$', daily_manage_search, name='daily_manage_search'), # 展示
@@ -42,7 +41,7 @@ urlpatterns = [
             url(r'^daily_save_pic/$', daily_save_pic, name='daily_save_pic'),
             url(r'^daily_get_pic/$', daily_get_pic, name='daily_get_pic'),
 
-            url(r'^date_now/$', date_now, name='date_now'),
+            url(r'^version/$', VERSION, name='version'),
 
             url(r'^data_init/$', data_init, name='data_init'),
             url(r'^admin/', admin.site.urls, name='admin'),
