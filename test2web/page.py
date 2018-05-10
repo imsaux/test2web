@@ -1,24 +1,31 @@
 # -*- encoding:utf-8 -*-
-from django.forms import *
-from . import logic
-from . import models
+from django.forms import Form
+from test2web import models
 from datetime import datetime, tzinfo, timedelta, timezone
 from django.shortcuts import render, render_to_response
+from django.urls import reverse
 from django.http import HttpResponseRedirect, HttpResponse
 from django.contrib.auth.admin import User
 from django.contrib.auth.decorators import login_required
 from django import forms
 from django.contrib import auth
-from django.utils.decorators import method_decorator
-from django.db.models import Max, Min, Sum
-import datetime
-import locale
-# excel
 from openpyxl import Workbook
 from openpyxl.worksheet.table import Table, TableStyleInfo
-# 文件下载
 from django.utils.http import urlquote
 from django.http import FileResponse
+from pypinyin import pinyin, Style
+import datetime
+import json
+import locale
+import logging, inspect, os
+
+
+
+global _r_start_date_, _r_end_date_, _r_site_, _r_reasons_
+_r_start_date_ = None
+_r_end_date_ = None
+_r_site_ = None
+_r_reasons_ = None
 
 # 登录表单模型
 class UserForm(forms.Form):
@@ -31,31 +38,75 @@ class UserRegisterForm(forms.Form):
     password = forms.CharField(label='密码', widget=forms.PasswordInput())
     is_staff = forms.BooleanField(label='管理员权限', widget=forms.CheckboxInput(), required=False)
 
+def _datetime_format(date=None, mode=1):
+    if date is None:
+        date = datetime.datetime.now()
+    if mode == 1:
+        return str(date.year) + '年' + str(date.month) + '月' + str(date.day) + '日'
+    elif mode == 2:
+        return date.strftime('%Y%m%d%H%M%S')
+    elif mode == 3:
+        return date.strftime('%m/%d/%Y')
+    elif mode == 4:
+        return str(date.year) + '年' + str(date.month) + '月' + str(date.day) + '日 ' + str(date.hour).zfill(2) + ':' + str(date.minute).zfill(2) + ':' + str(date.second).zfill(2)
+    elif mode == 5:
+        return date.strftime('%Y%m%d')
 
-# 登录
+def _getLogger():
+    logger = logging.getLogger('[web]')
+
+    this_file = inspect.getfile(inspect.currentframe())
+    dirpath = os.path.abspath(os.path.dirname(this_file))
+    if not os.path.exists(os.path.join(dirpath, 'log')):
+        os.makedirs(os.path.join(dirpath, 'log'))
+    handler = logging.FileHandler(os.path.join(dirpath, 'log', _datetime_format(date=datetime.datetime.now(),mode=5) + ".log"))
+
+    formatter = logging.Formatter('%(asctime)s %(name)-12s [line:%(lineno)d] %(levelname)-8s %(message)s')
+    handler.setFormatter(formatter)
+
+    logger.addHandler(handler)
+    logger.setLevel(logging.INFO)
+
+    return logger
+
+log = _getLogger()
+
+def VERSION(request):
+    return HttpResponse('版本号：v20180510'.encode())
+
 def login(request):
+    log.info("login > start")
+    log.info("login > 日期：" + _datetime_format(mode=5))
+    log.info("login > IP地址：" + repr(get_client_ip(request)))
     if request.method == 'POST':
         uf = UserForm(request.POST)
         if uf.is_valid():
             # 获取表单用户密码
             username = uf.cleaned_data['username']
             password = uf.cleaned_data['password']
+            log.info("login > " + username)
+
             # 获取的表单数据与数据库进行比较
             user = auth.authenticate(username=username, password=password)
             if user is not None and user.is_active:
                 auth.login(request, user)
                 if user.is_staff:
-                    return daily_manage(request)
+                    log.info("login > 管理员")
+                    return daily_manage_lab(request)
                 else:
+                    log.info("login > 访客")
                     return daily_view(request)
             else:
+                log.info("login > 无效账户")
                 return HttpResponseRedirect('/login/')
     else:
         uf = UserForm()
+    log.info("login > 未注册")
     return render_to_response('login.html', {'uf': uf})
 
-# 注册
 def register(request):
+    log.info("register > start")
+    log.info(datetime.datetime.now())
     if request.method == 'POST':
         urf = UserRegisterForm(request.POST)
         if urf.is_valid():
@@ -68,14 +119,18 @@ def register(request):
                 user.set_password(password)
                 user.is_staff = isstaff
                 user.save()
+                log.info("register > end")
+                return HttpResponseRedirect('/login/')
             except Exception as e:
                 urf = UserRegisterForm()
+                log.info("register > end")
                 return render_to_response('register.html', {'uf': urf})
-            return HttpResponseRedirect('/login/')
+        else:
+            log.info("register > end")
     else:
         urf = UserRegisterForm()
+        log.info("register > end")
         return render_to_response('register.html', {'uf': urf})
-
 
 def _redirect(page, params):
     _page = page + '.html'
@@ -84,223 +139,11 @@ def _redirect(page, params):
         params
     ).content.decode('utf8')
 
-
-def warning_page(request):
-    _algo = [x.name for x in models.Algo.objects.exclude(pid=0)]
-    _kind = [x.name for x in models.Kind.objects.all()]
-    _site = [x.name for x in models.Site.objects.all()]
-    _reason = [x.name for x in models.Reason.objects.all()]
-    _date = datetime.datetime.now(tz=timezone(
-        timedelta(hours=8))).strftime('%m/%d/%Y')
-    return render_to_response(
-        'base.html',
-        {
-            'box_content': _redirect(
-                'add_warning',
-                {
-                    'algo_type': _algo,
-                    'train_kind': _kind,
-                    'error_reason': _reason,
-                    'date_now': _date,
-                    'all_site': _site,
-                    'user': request.user,
-                }
-            ),
-            'user': request.user,
-        }
-    )
-
-
-def stat_page(request):
-    _select_site = [x.name for x in models.Site.objects.all()]
-    return get_data(request, _site=_select_site[0])
-
-
-def get_data(request, _site=None, _date=None):
-    locale.setlocale(locale.LC_CTYPE, 'chinese')
-    data = list()
-    _select_site = [x.name for x in models.Site.objects.all()]
-    if _date is None:
-        _date = datetime.datetime.now()
-    try:
-        all_info = models.Info.objects.filter(
-            site=models.Site.objects.get(name=_site), datetime=_date.date())
-        _info = [
-            all_info.last().sx_h_lie,
-            all_info.last().sx_h_liang,
-            all_info.last().sx_k_lie,
-            all_info.last().sx_k_liang,
-            all_info.last().xx_h_lie,
-            all_info.last().xx_h_liang,
-            all_info.last().xx_k_lie,
-            all_info.last().xx_k_liang,
-        ]
-    except Exception as e:
-        _info = [0] * 8
-    try:
-        all_warning = models.Warning.objects.filter(site=models.Site.objects.get(name=_site), date__year=_date.year,
-                                                date__month=_date.month, date__day=_date.day).order_by('algo__pid')
-
-        P_algo = sorted(
-            set([y[0]['pid'] for y in [x.algo.all().values('pid') for x in all_warning]]))
-        _current_parent_algo = None
-        _index = 1
-        for _p in P_algo:
-            this_p_algo = all_warning.filter(algo__pid=_p)
-            _algo = set([y[0]['id'] for y in [x.algo.all().values('id')
-                                              for x in this_p_algo]])
-            this_p_algo_count = len(_algo)
-            for _a in _algo:
-                _this = list()
-                this_algo = all_warning.filter(algo=_a)
-                this_algo_obj = models.Algo.objects.get(id=_a)
-                this_algo_obj_name = this_algo_obj.name
-                this_algo_parent_obj = models.Algo.objects.get(
-                    id=this_algo_obj.pid)
-                this_algo_parent_obj_name = this_algo_parent_obj.name
-                if _current_parent_algo is None or _current_parent_algo != this_algo_parent_obj_name:
-                    _this.append(str(this_p_algo_count))
-                    _this.append(this_algo_parent_obj_name)
-                    _current_parent_algo = this_algo_parent_obj_name
-                else:
-                    _this.append('')
-                    _this.append('')
-                _this.append(this_algo_obj_name)
-                line_1_real = len(this_algo.filter(line='上行', warning_type='真实'))
-                line_2_real = len(this_algo.filter(line='下行', warning_type='真实'))
-                line_1_err = len(this_algo.filter(line='上行', warning_type='误报'))
-                line_2_err = len(this_algo.filter(line='下行', warning_type='误报'))
-                line_1_miss = len(this_algo.filter(line='上行', warning_type='漏报'))
-                line_2_miss = len(this_algo.filter(line='下行', warning_type='漏报'))
-                line_1_total = line_1_real + line_1_err
-                line_2_total = line_2_real + line_2_err
-                _this.append(line_1_total)
-                _this.append(line_1_real)
-                _this.append(line_1_err)
-                _this.append(line_1_miss)
-                _this.append(line_2_total)
-                _this.append(line_2_real)
-                _this.append(line_2_err)
-                _this.append(line_2_miss)
-                data.append(_this)
-                _index += 1
-
-    except Exception as e:
-        pass
-
-    _js = r"""<script src="/static/js/my/stat.js"></script>"""
-    _css = r"""<link href="/static/css/my/dict.css" rel="stylesheet">"""
-    _rMenu = r"""<div id="rMenu"><img src="/static/img/gallery/photo2.jpg" /></div>"""
-    return render_to_response(
-        'base.html',
-        {
-            'box_content': _redirect(
-                'stat',
-                {
-                    'body_script': _js,
-                    'body_style': _css,
-                    'body_root_content': _rMenu,
-                    'stat_data': data,
-                    'data_date': _date.strftime('%Y') + '年' + _date.strftime('%m') + '月' + _date.strftime('%d') + '日',
-                    'data_title': str(_date.month) + '月' + str(_date.day) + '日8时 - ' + str(_date.month) + '月' + str(
-                        _date.day + 1) + '日8时',
-                    'all_site': _select_site,
-                    'current_site': _site,
-                    'date_now': _date.strftime('%m/%d/%Y'),
-                    'info': _info,
-
-                }
-            ),
-            'user': request.user,
-        }
-    )
-
-
 def logout(request):
+    log.info("logout > start")
     auth.logout(request)
+    log.info("logout > end")
     return login(request)
-
-
-def dict_page(request):
-    _js = r"""<script src="/static/js/my/dict.js"></script>"""
-    _css = r"""<link href="/static/css/my/dict.css" rel="stylesheet">"""
-    _rMenu = r"""
-        <div id="rMenu">
-            <ul>
-                <li id="m_add" onclick="addTreeNode();">增加节点</li>
-                <li id="m_del" onclick="removeTreeNode();">删除节点</li>
-                <li id="m_check" onclick="editTreeNode();">修改节点</li>
-            </ul>
-        </div>"""
-    return render_to_response(
-        'base.html',
-        {
-            'box_content': _redirect(
-                'dict',
-                {
-                }
-            ),
-            'body_script': _js,
-            'body_style': _css,
-            'body_root_content': _rMenu,
-            'user': request.user,
-        },
-    )
-
-
-def info_page(request):
-    _date = datetime.datetime.now(tz=timezone(
-        timedelta(hours=8))).strftime('%m/%d/%Y')
-    _site = [x.name for x in models.Site.objects.all()]
-    return render_to_response(
-        'base.html',
-        {
-            'box_content': _redirect(
-                'add_info',
-                {
-                    'date_now': _date,
-                    'all_site': _site,
-                }
-            ),
-            'user': request.user,
-        }
-    )
-
-def import_data(request):
-    # 接收4G站点数据
-    site_name = request.POST['站点']
-    _line_1_trains = request.POST['1列数']
-    _line_2_trains = request.POST['2列数']
-    _line_1_carriages = request.POST['1辆数']
-    _line_2_carriages = request.POST['2辆数']
-
-    new_status = models.ClientStatus(
-        datetime=datetime.datetime.strptime(
-            request.POST['datetime'], '%Y%m%d%H%M%S'),
-        site=site_name,
-        line_1_trains=_line_1_trains,
-        line_1_carriages=_line_1_carriages,
-        line_2_trains=_line_2_trains,
-        line_2_carriages=_line_2_carriages,
-    )
-    new_status.save()
-    for key in request.POST.keys():
-        if key in ['站点', '1列数', '2列数', '1辆数', '2辆数', 'datetime']:
-            pass
-        else:
-            _key = key
-            if ',' in key:          # support 2.5
-                _key = key.split(',')[0]
-            new_warning = models.ClientWarning(
-                datetime=datetime.datetime.strptime(
-                    request.POST['datetime'], '%Y%m%d%H%M%S'),
-                site=site_name,
-                algo=_key,
-                count=int(request.POST[key])
-            )
-            new_warning.save()
-    return HttpResponse(status=200)
-
 
 def file_download(request, _file):
     file = open(_file, 'rb')
@@ -308,7 +151,6 @@ def file_download(request, _file):
     response['Content-Type'] = 'application/octet-stream'
     response['Content-Disposition'] = 'attachment;filename="%s"' % (urlquote(_file))
     return response
-
 
 def export_xlsx(request):
     wb = Workbook()
@@ -320,11 +162,11 @@ def export_xlsx(request):
         ws.append(
             [
                 row[9],
-                row[0],
                 row[1],
                 row[2],
                 row[3],
                 row[4],
+                row[5],
             ]
         )
     _tab_ref = "A1:F%s" % (len(all_data)+1)
@@ -338,28 +180,17 @@ def export_xlsx(request):
     wb.save(_file_name)
     return file_download(request, _file_name)
 
-
-def _datetime_format(date=datetime.datetime.now(), mode=1):
-    if mode == 1:
-        return str(date.year) + '年' + str(date.month) + '月' + str(date.day) + '日'
-    elif mode == 2:
-        return date.strftime('%Y%m%d%H%M%S')
-    elif mode == 3:
-        return date.strftime('%m/%d/%Y')
-    elif mode == 4:
-        return str(date.year) + '年' + str(date.month) + '月' + str(date.day) + '日 ' + str(date.hour).zfill(2) + ':' + str(date.minute).zfill(2) + ':' + str(date.second).zfill(2)
-
-
-def _auto_create_daily_info(date=datetime.datetime.now()):
+def _auto_create_daily_info(date=None):
     # 自动创建
-    # _return = list()
-    _all_site_ = [x.code for x in models.Site.objects.all().order_by('order')]
+    _all_site_ = [x.name for x in models.Site.objects.all().order_by('order')]
+    if date is None:
+        date = datetime.datetime.now()
     _range_from, _range_to = _get_range_date(date)
     for site in _all_site_:
-        _site_obj = models.Site.objects.get(code=site)
+        _site_obj = models.Site.objects.get(name=site)
         _site_warning = models.ClientWarning.objects.filter(site=_site_obj, datetime__range=(_range_from, _range_to))
         _site_status = models.ClientStatus.objects.filter(site=_site_obj, datetime__range=(_range_from, _range_to))
-        _site_meta = models.DailyReport_Meta.objects.filter(site=_site_obj).order_by("date")
+        _site_meta = models.DailyReport_Meta.objects.filter(site=_site_obj).order_by("date", "id")
 
         if len(_site_warning) > 0:
             _columns = [x['warn'] for x in _site_warning.values('warn').distinct()]  # 列出报警类型
@@ -411,11 +242,14 @@ def _auto_create_daily_info(date=datetime.datetime.now()):
                 track='无',
             )
             _new_meta.save()
-            # _return.append([_site_obj.name, carriages, warning, '无', '无', _new.id, _new.status])
 
 
-def _get_daily_data(_from=datetime.datetime.now(), _to=datetime.datetime.now(), _site_name=None, _reasons=None, _is_confirm=False):
+def _get_daily_data(_from=None, _to=None, _site_name=None, _reasons=None, _is_confirm=False):
     _return = list()
+    if _from is None:
+        _from = datetime.datetime.now()
+    if _to is None:
+        _to = datetime.datetime.now()
     if _r_reasons_ is not None:
         _reasons = _r_reasons_
     if _r_site_ is not None:
@@ -425,71 +259,80 @@ def _get_daily_data(_from=datetime.datetime.now(), _to=datetime.datetime.now(), 
     if _r_end_date_ is not None:
         _to = datetime.datetime.strptime(_r_end_date_, '%m/%d/%Y')
     if _site_name is None or _site_name == '全部':
-        _all_site_ = [x.code for x in models.Site.objects.all().order_by('order')]
+        _all_site_ = [x.name for x in models.Site.objects.all().order_by('order')]
     else:
-        _all_site_ = [models.Site.objects.get(name=_site_name).code]
+        try:
+            _all_site_ = [models.Site.objects.get(name=_site_name).name]
+        except:
+            _all_site_ = [models.Site.objects.get(code=_site_name).name]
     _all_data_ = models.DailyReport.objects.filter(date__range=(_from, _to))
-    _sitenames_dailyreport = [models.Site.objects.get(id=x['site']).code for x in
+    _sitenames_dailyreport = [models.Site.objects.get(id=x['site']).name for x in
                               _all_data_.values('site').distinct()]
     for site in _all_site_:
-        _site_obj = models.Site.objects.get(code=site)
+        _site_obj = models.Site.objects.get(name=site)
         if site in _sitenames_dailyreport: # 有日报表数据
-            _site_data_ = _all_data_
+            _site_data_is_confirm = None
+            _site_data_reasons = None
             if _is_confirm is True:
-                _site_data_ = _site_data_.filter(site=_site_obj, status=True)
+                _site_data_is_confirm = _all_data_.filter(site=_site_obj, status=True)
             else:
-                _site_data_ = _site_data_.filter(site=_site_obj)
+                _site_data_is_confirm = _all_data_.filter(site=_site_obj)
             if _reasons is None or len(_reasons) == 0 or '全部' in _reasons:
                 pass
             else:
-                _site_data_ = _site_data_.filter(reason__name__in=_reasons)
-            for data in _site_data_:
+                _site_data_reasons = _all_data_.filter(reason__name__in=_reasons)
+            ret_data = set(_all_data_)
+            if _site_data_is_confirm is not None:
+                ret_data = ret_data & set(_site_data_is_confirm)
+            if _site_data_reasons is not None:
+                ret_data = ret_data & set(_site_data_reasons)
+
+            for data in ret_data:
                 carriages_count = data.carriages_count
                 warn = data.warn
                 _data_meta = models.DailyReport_Meta.objects.filter(site=_site_obj, date=data.date)
+                # 0 id
+                # 1 站名
+                # 2 过车数
+                # 3 报警统计
+                # 4 问题
+                # 5 问题追踪
+                # 6 问题分类
+                # 7 记录发布状态
+                # 8 记录日期
+                # 9 所属路局
+
                 if len(_data_meta) > 0:
                     _return.append(
                         [
+                            data.id,
                             _site_obj.name,
                             carriages_count,
                             warn,
                             _data_meta.last().problem,
                             _data_meta.last().track,
-                            data.id,
-                            data.status,
                             '、'.join([x['name'] for x in data.reason.all().values('name')]),
+                            data.status,
                             _datetime_format(date=data.date, mode=3),
-                            _site_obj.bureau,
+                            _site_obj.bureau
                         ]
                     )
                 else:
                     _return.append(
                         [
+                            data.id,
                             _site_obj.name,
                             carriages_count,
                             warn,
                             '无',
                             '无',
-                            data.id,
-                            data.status,
                             '、'.join([x['name'] for x in data.reason.all().values('name')]),
-                            _datetime_format(date=data.date, mode=3),
-                            _site_obj.bureau,
+                            data.status,
+                            data.date,
+                            _site_obj.bureau
                         ]
                     )
     return _return
-
-
-def _search_session(request):
-    pass
-
-
-global _r_start_date_, _r_end_date_, _r_site_, _r_reasons_
-_r_start_date_ = None
-_r_end_date_ = None
-_r_site_ = None
-_r_reasons_ = None
-
 
 def _init_global():
     global _r_start_date_, _r_end_date_, _r_site_, _r_reasons_
@@ -497,7 +340,6 @@ def _init_global():
     _r_end_date_ = None
     _r_site_ = None
     _r_reasons_ = None
-
 
 def daily_manage_search(request):
     global _r_start_date_, _r_end_date_ , _r_site_, _r_reasons_
@@ -511,30 +353,48 @@ def daily_manage_search(request):
     _r_reasons_ = r_reasons
     _from = datetime.datetime.strptime(r_start_date, '%m/%d/%Y')
     _to = datetime.datetime.strptime(r_end_date, '%m/%d/%Y')
-    _sites = ['全部'] + [x.name for x in models.Site.objects.all().order_by('order')]
-    _reasons = ['全部'] + [x.name for x in models.Reason.objects.all()]
+    _sites_name = [x.name for x in models.Site.objects.all().order_by('order')]
+    _reasons = [x.name for x in models.Reason.objects.all()]
 
-    if r_site == '全部':
-        all_data = _get_daily_data(_from=_from, _to=_to, _reasons=r_reasons)
-    else:
-        all_data = _get_daily_data(_from=_from, _to=_to, _site_name=r_site,  _reasons=r_reasons)
+
+
+    # global _r_start_date_, _r_end_date_ , _r_site_, _r_reasons_
+    # _response_data = request.POST['data'].split('@@@@@')
+    # r_site = _response_data[0]
+    # _r_site_ = r_site
+    # r_start_date = _response_data[1]
+    # _r_start_date_ = r_start_date
+    # r_end_date = _response_data[2]
+    # _r_end_date_ = r_end_date
+    # r_reasons = _response_data[3]
+    #
+    # _r_reasons_ = r_reasons.split(',')
+    # _from = datetime.datetime.strptime(r_start_date, '%m/%d/%Y')
+    # _to = datetime.datetime.strptime(r_end_date, '%m/%d/%Y')
+    _sites_code = [''.join([x[0] for x in pinyin(x.name, style=Style.FIRST_LETTER)])+x.name for x in models.Site.objects.all().order_by('order')]
+    # _sites_name = [x.name for x in models.Site.objects.all().order_by('order')]
+    # _reasons = [x.name for x in models.Reason.objects.all()]
+    all_data = _get_daily_data(_from=_from, _to=_to, _site_name=r_site,  _reasons=r_reasons)
 
 
     return render_to_response(
         'base.html',
         {
             'box_content': _redirect(
-                'daily_manage',
+                'daily_manage_lab',
                 {
                     'title': _datetime_format(date=_to),
                     'data': all_data,
                     'date_now': _datetime_format(mode=3),
-                    'all_site': _sites,
-                    'error_reason': _reasons,
-                    'q_site': r_site,
-                    'q_reason': r_reasons,
-                    'q_start_date': r_start_date,
-                    'q_end_date': r_end_date,
+                    'all_site': json.dumps(_sites_name),
+                    'all_site_old': ['全部'] +_sites_code,
+                    'all_site_code': ['全部'] + _sites_code,
+                    'error_reason': json.dumps(_reasons),
+                    'error_reason_old': _reasons,
+                    'q_site': '全部' if _r_site_ is None else _r_site_,
+                    'q_reason': json.dumps(list()) if _r_reasons_ is None else json.dumps(_r_reasons_),
+                    'q_start_date': _datetime_format(mode=3) if _r_start_date_ is None else _r_start_date_,
+                    'q_end_date': _datetime_format(mode=3) if _r_end_date_ is None else _r_end_date_,
                 }
             ),
             'user': request.user,
@@ -588,13 +448,17 @@ def daily_view_search(request):
 
 
 
-def daily_view(request, _date=datetime.datetime.now()):
+def daily_view(request, _date=None):
+    log.info("daily_view > 用户（ " + request.user.username + ' )')
+    log.info("daily_view > IP（ " + request.META['REMOTE_ADDR'] + ' )')
+    log.debug("daily_view > " + repr(_date))
+    if _date is None:
+        _date = datetime.datetime.now()
     # _range_from, _range_to = _get_range_date(_date)
     _init_global()
     _sites = ['全部'] + [x.name for x in models.Site.objects.all().order_by('order')]
     _all_data_ = _get_daily_data(_from=_date, _to=_date, _is_confirm=True)
     _reasons = ['全部'] + [x.name for x in models.Reason.objects.all()]
-
     return render_to_response(
         'base.html',
         {
@@ -617,28 +481,37 @@ def daily_view(request, _date=datetime.datetime.now()):
     )
 
 @login_required
-def daily_manage(request, _date=datetime.datetime.now(), init_global=True, loc=None):
-    _js = r"""<script src="/static/js/location.js"></script>"""
+def daily_manage_lab(request, _date=None, init_global=True, loc=None):
+    log.info("daily_manage_lab > 用户（ " + request.user.username + ' )')
+    log.info("daily_manage_lab > IP地址：" + repr(get_client_ip(request)))
+    log.info("daily_manage_lab > " + repr(_date) + ' , ' + repr(init_global) + ' , ' + repr(loc))
+    if _date is None:
+        _date = datetime.datetime.now()
     if init_global:
         _init_global()
-    _range_from, _range_to = _get_range_date(_date)
-    _sites = ['全部'] + [x.code for x in models.Site.objects.all().order_by('order')]
-    _reasons = ['全部'] + [x.name for x in models.Reason.objects.all()]
+    # _range_from, _range_to = _get_range_date(_date)
+    _sites_code = [''.join([x[0] for x in pinyin(x.name, style=Style.FIRST_LETTER)])+x.name for x in models.Site.objects.all().order_by('order')]
+    _sites_name = [x.name for x in models.Site.objects.all().order_by('order')]
+    _reasons = [x.name for x in models.Reason.objects.all().order_by('name')]
 
     all_data = _get_daily_data()
     return render_to_response(
         'base.html',
         {
             'box_content': _redirect(
-                'daily_manage',
+                'daily_manage_lab',
                 {
-                    'title': _datetime_format(date=_range_to),
+                    'title': _datetime_format(date=_date),
                     'data': all_data,
                     'date_now': _datetime_format(mode=3),
-                    'all_site': _sites,
-                    'error_reason': _reasons,
+                    'all_site': json.dumps(_sites_name),
+                    'all_site_old': ['全部'] +_sites_code,
+                    # 'all_site_code': ['全部'] + _sites_code,
+                    'all_site_code': ['全部'] + _sites_code,
+                    'error_reason': json.dumps(_reasons),
+                    'error_reason_old': _reasons,
                     'q_site': '全部' if _r_site_ is None else _r_site_,
-                    'q_reason': list() if _r_reasons_ is None else _r_reasons_,
+                    'q_reason': json.dumps(list()) if _r_reasons_ is None else json.dumps(_r_reasons_),
                     'q_start_date': _datetime_format(mode=3) if _r_start_date_ is None else _r_start_date_,
                     'q_end_date': _datetime_format(mode=3) if _r_end_date_ is None else _r_end_date_,
                     'loc': int(loc) if loc is not None else None,
@@ -646,141 +519,160 @@ def daily_manage(request, _date=datetime.datetime.now(), init_global=True, loc=N
                 }
             ),
             'user': request.user,
-            'body_script': _js,
+            # 'body_script': _js,
         }
     )
 
+def get_client_ip(request):
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[-1].strip()
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
+
 def daily_ajax_search(request):
     try:
-        _site = request.POST['site']
+        _site = request.POST['r_site']
         _site_obj = models.Site.objects.get(name=_site)
-        _meta_obj = models.DailyReport_Meta.objects.get(site=_site_obj.id)
+        _meta_obj = models.DailyReport_Meta.objects.filter(site=_site_obj.id).last()
         ret = list()
         ret.append(_meta_obj.problem)
         ret.append(',')
         ret.append(_meta_obj.track)
         return HttpResponse(ret)
     except Exception as e:
-        pass
-
-def daily_create_single(request):
-    # _site = request.POST['r_site']
-    _site_obj = models.Site.objects.all().first()
-    # _site_obj = models.Site.objects.get(code=_site)
-    _meta_obj = models.DailyReport_Meta.objects.filter(site=_site_obj.id)
-    return daily_edit(request, _site=_site_obj.name, _site_problem=_meta_obj.last().problem if len(_meta_obj)>0 else "无", _site_track=_meta_obj.last().track  if len(_meta_obj)>0 else "无")
+        return HttpResponse(None)
 
 def daily_create_all(request):
+    log.info("daily_create_all > 用户（ " + request.user.username + ' )')
+    log.info("daily_create_all > 一键新增记录")
     _auto_create_daily_info()
-    return daily_manage(request)
-
-def daily_copy(request, _id):
-    return daily_edit(request, _id=_id, _is_copy=True)
+    return HttpResponseRedirect(reverse('daily_manage_lab'))
 
 def daily_delete(request, _id):
+    log.info("daily_delete > 用户（ " + request.user.username + ' )')
+    log.info("daily_delete > 删除记录（ #" + repr(_id) + ' )')
     obj = models.DailyReport.objects.get(id=_id)
     obj.delete()
-    return daily_manage(request, init_global=False)
+    return daily_manage_lab(request, init_global=False)
 
 def daily_confirm(request, _id):
+    log.info("daily_confirm > 用户（ " + request.user.username + ' )')
+    log.info("daily_confirm > 发布记录（ #" + repr(_id) + ' )')
     obj = models.DailyReport.objects.get(id=_id)
     obj.status = True
     obj.save()
-    return daily_manage(request, init_global=False, loc=_id)
-
+    return daily_manage_lab(request, init_global=False, loc=_id)
 
 def daily_unconfirm(request, _id):
+    log.info("daily_unconfirm > 用户（ " + request.user.username + ' )')
+    log.info("daily_unconfirm > 取消发布记录（ #" + repr(_id) + ' )')
+
     obj = models.DailyReport.objects.get(id=_id)
     obj.status = False
     obj.save()
-    return daily_manage(request, init_global=False, loc=_id)
+    return daily_manage_lab(request, init_global=False, loc=_id)
 
-
-def daily_save(request, _id):
-    _site = models.Site.objects.get(name=str(request.POST['r_sites']))
-    _date = datetime.datetime.strptime(request.POST['r_date'], '%m/%d/%Y')
-    if _id == '-1':
-        try:
-            _carriages = int(request.POST['r_carriages'])
-        except Exception as e:
-            pass
-        try:
-            _imgs = str(request.POST['r_imgs']).encode()
-        except Exception as e:
-            pass
-        _new = models.DailyReport(
-            date=_date,
-            site=_site,
-            warn=str(request.POST['r_warning']),
-            carriages_count=_carriages,
-            imgs=_imgs,
-
-        )
-        _new.save()
-
-        _reasons = [models.Reason.objects.get(
-            name=x) for x in request.POST.getlist('r_reason')]
-        for r in _reasons:
-            _new.reason.add(r)
-        try:
-            # daily_report_meta_obj = models.DailyReport_Meta.objects.get(site=_site)
-            # daily_report_meta_obj.problem = request.POST['r_problem']
-            # daily_report_meta_obj.track = request.POST['r_track']
-            # daily_report_meta_obj.save()
-            _new_meta = models.DailyReport_Meta(
-                date=_date,
-                site=_site,
-                problem=request.POST['r_problem'],
-                track=request.POST['r_track'],
+def _save_dailyreport(dailyreport_id, site=None, date=None, warn=None, carriages=None, imgs=None):
+    if dailyreport_id is None:
+        if site is not None:
+            try:
+                site = models.Site.objects.get(name=site)
+            except Exception as e:
+                _order = models.Site.objects.all().last().order + 1
+                site = models.Site.objects.create(name=site, order=_order)
+            _new = models.DailyReport(
+                date=date if date is not None else datetime.datetime.now(),
+                site=site,
+                warn=warn if warn is not None else "",
+                carriages_count=carriages if carriages is not None else "",
+                imgs=imgs if imgs is not None else "".encode()
             )
-            _new_meta.save()
-        except Exception as e:
-            pass
+            _new.save()
+            return _new.id
+        else:
+            return -1
     else:
+        dailyreport_obj = models.DailyReport.objects.get(id=dailyreport_id)
+        site = models.Site.objects.get(name=site)
 
-        try:
-            # daily_report_meta_obj = models.DailyReport_Meta.objects.get(site=_site)
-            # daily_report_meta_obj.problem = request.POST['r_problem']
-            # daily_report_meta_obj.track = request.POST['r_track']
-            # daily_report_meta_obj.save()
-            _new_meta = models.DailyReport_Meta(
-                date=_date,
-                site=_site,
-                problem=request.POST['r_problem'],
-                track=request.POST['r_track'],
-            )
-            _new_meta.save()
-        except Exception as e:
-            pass
+        if site is not None:
+            dailyreport_obj.site = site
+        if date is not None:
+            dailyreport_obj.date = date
+        if warn is not None:
+            dailyreport_obj.warn = warn
+        if carriages is not None:
+            dailyreport_obj.carriages_count = carriages
+        if imgs is not None:
+            dailyreport_obj.imgs = imgs
+        dailyreport_obj.save()
+        return dailyreport_obj.id
 
-        daily_report_obj = models.DailyReport.objects.get(id=_id)
-        try:
-            daily_report_obj.carriages_count = int(request.POST['r_carriages'])
-        except Exception as e:
-            pass
-        try:
-            daily_report_obj.imgs = str(request.POST['r_imgs']).encode()
-        except Exception as e:
-            pass
+def _save_dailyreportmeta(date, site, problem, track):
+    _new = models.DailyReport_Meta(
+        date=date,
+        site=site,
+        problem=problem,
+        track=track
+    )
+    _new.save()
 
-        daily_report_obj.warn = request.POST['r_warning']
-        daily_report_obj.date = _date
-        daily_report_obj.site = _site
-        daily_report_obj.save()
+def _save_dailyreportreason(dailyreport_id, reason):
+    _dailyreport_obj = models.DailyReport.objects.get(id=dailyreport_id)
+    _dailyreport_obj.reason.clear()
+    _reasons = [models.Reason.objects.get(
+        name=x) for x in reason if x != '']
+    for r in _reasons:
+        _dailyreport_obj.reason.add(r)
+    _dailyreport_obj.save()
 
-        _reasons = [models.Reason.objects.get(
-            name=x) for x in request.POST.getlist('r_reason')]
-        daily_report_obj.reason.clear();
-        for r in _reasons:
-            daily_report_obj.reason.add(r)
+def daily_save_data(request):
 
-    return daily_manage(request, loc=_id)
+    try:
+        request_data = request.POST['data'].split('@@@@@')
+        _id = request_data[0]
+        _site = request_data[1]
+        _carriages = request_data[2]
+        _warn = request_data[3]
+        _problem = request_data[4]
+        _track = request_data[5]
+        _reason = [x.strip() for x in str(request_data[6]).split('、')]
 
+        log.info("daily_save_data > 用户（ " + request.user.username + ' )')
+        id = _save_dailyreport(
+            _id if _id != 'new' else None,
+            site=_site,
+            date=datetime.datetime.now() if _id =='new' else None,
+            carriages=_carriages,
+            warn=_warn
+        )
+        _save_dailyreportmeta(
+            datetime.datetime.now(),
+            models.Site.objects.get(name=_site),
+            _problem,
+            _track
+        )
+        _save_dailyreportreason(
+            id,
+            _reason
+        )
+        log.info("daily_save_data > 保存成功 " + repr(_id) + " -> " + repr(id))
+        return daily_manage_lab(request, init_global=False)
+    except:
+        log.info("daily_save_data > 保存失败" + repr(_id) + " -> " + repr(id))
+        return daily_manage_lab(request, init_global=False)
+
+def daily_get_pic(request):
+    log.info("daily_get_pic > " + request.user.username)
+    _id = request.POST['id']
+    log.info("daily_get_pic > 获取图片 > " + repr(_id))
+    _dr = models.DailyReport.objects.get(id=_id)
+    return HttpResponse(str(_dr.imgs, encoding='utf-8'))
 
 def daily_detail_img(request, _id):
     _data_info = models.DailyReport.objects.get(id=_id)
-    _range_from, _range_to = _get_range_date(datetime.datetime.now())
-
     _title = _datetime_format(date=_data_info.date)
     _r = str(_data_info.imgs, encoding='utf-8')
 
@@ -799,63 +691,8 @@ def daily_detail_img(request, _id):
         }
     )
 
-def daily_edit(request, _id=None, _site=None,  _site_problem='无', _site_track='无', _is_copy=False):
-    _js = r"""<script src="/static/js/my/daily_edit.js"></script>"""
-    _range_from, _range_to = _get_range_date(datetime.datetime.now())
-    _reasons = [x.name for x in models.Reason.objects.all()]
-    _data_ = list()
-    _sites = [x.name for x in models.Site.objects.all()]
-
-    if _id is None:
-        _data_= [
-            '全部',
-            '0',
-            '无',
-            _site_problem,
-            _site_track,
-            '',
-            -1,
-            _datetime_format(mode=3),
-            [],
-        ]
-
-    else:
-
-        _report_data = models.DailyReport.objects.get(id=_id)
-        _meta_data = models.DailyReport_Meta.objects.filter(site=_report_data.site, date=_report_data.date).last()
-        _problem = _meta_data.problem if _meta_data is not None else '无'
-        _track = _meta_data.track if _meta_data is not None else '无'
-        _imgs = str(_report_data.imgs, encoding='utf-8')
-        _data_ = [
-            _report_data.site.name,
-            _report_data.carriages_count,
-            _report_data.warn,
-            _problem,
-            _track,
-            _imgs,
-            _report_data.id if not _is_copy else -1,
-            _datetime_format(date=_report_data.date, mode=3),
-            [x.name for x in _report_data.reason.all()],
-        ]
-    return render_to_response(
-        'base.html',
-        {
-            'box_content': _redirect(
-                'daily_edit',
-                {
-                    'title': '编辑记录',
-                    'all_site': _sites,
-                    'date_now': _datetime_format(mode=3),
-                    'error_reason': _reasons,
-                    'data': _data_,
-                    # 'single': True if _id is None else False,
-                }
-            ),
-            'user': request.user,
-            'body_script': _js,
-        }
-    )
-
+def date_now(request):
+    return HttpResponse(_datetime_format(mode=2).encode())
 
 def _get_range_date(date, _startwith=8):
     if date.hour >= _startwith:
@@ -878,128 +715,48 @@ def _get_range_date(date, _startwith=8):
 
     return _start_date, _end_date
 
-def test_test(request):
-    return HttpResponse(content=b'haha')
-
-#
-# def warning_detail(request, _date, _site, _algo, _line, _err_type):
-#     _date = datetime.datetime.strptime(_date, '%Y年%m月%d日')
-#     all_warning = models.Warning.objects.filter(
-#         warning_type=_err_type,
-#         algo=models.Algo.objects.get(name=_algo),
-#         line=_line,
-#         date=_date,
-#         site=models.Site.objects.get(name=_site),
-#     )
-#     data = list()
-#     for w in all_warning:
-#         _this = list()
-#         _this.append(_datetime_format(date=w.date))
-#         _this.append(w.site.name)
-#         _this.append(w.line)
-#         _this.append(w.kind.name)
-#         _this.append(w.side)
-#         _this.append(w.warning_type)
-#         _this.append(w.algo.all().values('name')[0]['name'])
-#         _this.append('、'.join([x['name']
-#                                for x in w.reason.all().values('name')]))
-#         _this.append('/' + w.pic.name)
-#         data.append(_this)
-#
-#     return render_to_response(
-#         'base.html',
-#         {
-#             'box_content': _redirect(
-#                 'detail',
-#                 {
-#                     'detail_data': data,
-#                 }
-#             ),
-#             'user': request.user,
-#         }
-#     )
-
-
-# def search_warning(request):
-#     _date = request.POST['r_date']
-#     _to_date = datetime.datetime.strptime(_date, '%m/%d/%Y')
-#     _site = request.POST['r_site']
-#     return get_data(request, _site, _to_date)
-#
-
-# def add_info(request):
-#     _date = datetime.datetime.strptime(request.POST['r_date'], '%m/%d/%Y')
-#     _site = models.Site.objects.get(name=request.POST['r_site'])
-#     _sx_h_lie = int(request.POST['sx_h_lie']
-#                     ) if request.POST['sx_h_lie'] != '' else 0
-#     _sx_h_liang = int(request.POST['sx_h_liang']
-#                       ) if request.POST['sx_h_liang'] != '' else 0
-#     _sx_k_lie = int(request.POST['sx_k_lie']
-#                     ) if request.POST['sx_k_lie'] != '' else 0
-#     _sx_k_liang = int(request.POST['sx_k_liang']
-#                       ) if request.POST['sx_k_liang'] != '' else 0
-#     _xx_h_lie = int(request.POST['xx_h_lie']
-#                     ) if request.POST['xx_h_lie'] != '' else 0
-#     _xx_h_liang = int(request.POST['xx_h_liang']
-#                       ) if request.POST['xx_h_liang'] != '' else 0
-#     _xx_k_lie = int(request.POST['xx_k_lie']
-#                     ) if request.POST['xx_k_lie'] != '' else 0
-#     _xx_k_liang = int(request.POST['xx_k_liang']
-#                       ) if request.POST['xx_k_liang'] != '' else 0
-#     _new = models.Info(
-#         datetime=_date,
-#         site=_site,
-#         sx_h_liang=_sx_h_liang,
-#         sx_h_lie=_sx_h_lie,
-#         sx_k_liang=_sx_k_liang,
-#         sx_k_lie=_sx_k_lie,
-#         xx_h_liang=_xx_h_liang,
-#         xx_h_lie=_xx_h_lie,
-#         xx_k_liang=_xx_k_liang,
-#         xx_k_lie=_xx_k_lie,
-#     )
-#     _new.save()
-#     return stat_page(request)
-
-
-# def add_warning(request):
-#     # if request.Method == 'POST':
-#     _date = request.POST['r_date']
-#     _to_date = datetime.datetime.strptime(_date, '%m/%d/%Y')
-#     _site = models.Site.objects.get(name=request.POST['r_site'])
-#     _kind = models.Kind.objects.get(name=request.POST['r_kind'])
-#     _side = request.POST['r_side']
-#     _line = request.POST['r_line']
-#     _pic = request.FILES['r_pic']
-#     _type = request.POST['r_type']
-#     _algo = models.Algo.objects.get(name=request.POST['r_algo_type'])
-#     try:
-#         _add = models.Warning(
-#             date=_to_date,
-#             site=_site,
-#             side=_side,
-#             line=_line,
-#             kind=_kind,
-#             warning_type=_type,
-#             pic=_pic,
-#         )
-#         _add.save()
-#         _add.algo.add(_algo)
-#         if _type != '真实':
-#             _reasons = [models.Reason.objects.get(
-#                 name=x) for x in request.POST.getlist('r_reason')]
-#             for r in _reasons:
-#                 _add.reason.add(r)
-#
-#     except Exception as e:
-#         logic.to_log('error', repr(e))
-#     finally:
-#         return warning_page(request)
-
 def daily_delete_selected(request):
-    ids = [int(x) for x in request.POST['selected'].split(',')[1:]]
+    ids = [int(x.split('_')[1]) for x in request.POST['data'].split('@@@@@')[1:]]
     models.DailyReport.objects.filter(id__in=ids).delete()
-    return daily_manage(request, init_global=False)
+    log.info("daily_delete_selected > 用户（ " + request.user.username + ' )')
+    log.info("daily_delete_selected > IP地址：" + repr(get_client_ip(request)))
+    log.info("daily_delete_selected > 删除 ( " + repr(ids) + " )")
+    return daily_manage_lab(request, init_global=False)
+
+def daily_confirm_selected(request):
+    ids = [int(x.split('_')[1]) for x in request.POST['data'].split('@@@@@')[1:]]
+    for dr in models.DailyReport.objects.filter(id__in=ids):
+        dr.status = True
+        dr.save()
+    log.info("daily_confirm_selected > 用户（ " + request.user.username + ' )')
+    log.info("daily_confirm_selected > IP地址：" + repr(get_client_ip(request)))
+    log.info("daily_confirm_selected > 发布 ( " + repr(ids) + " )")
+        
+    return daily_manage_lab(request, init_global=False)
+
+def daily_unconfirm_selected(request):
+    ids = [int(x.split('_')[1]) for x in request.POST['data'].split('@@@@@')[1:]]
+    for dr in models.DailyReport.objects.filter(id__in=ids):
+        dr.status = False
+        dr.save()
+    log.info("daily_unconfirm_selected > 用户（ " + request.user.username + ' )')
+    log.info("daily_unconfirm_selected > IP地址：" + repr(get_client_ip(request)))
+    log.info("daily_unconfirm_selected > 取消发布 ( " + repr(ids) + " )")
+
+    return daily_manage_lab(request, init_global=False)
+
+def daily_save_pic(request):
+    try:
+        drObjId = request.POST['data'].split('@@@@@')[0]
+        contents = request.POST['data'].split('@@@@@')[1]
+        obj = models.DailyReport.objects.get(id=drObjId)
+        obj.imgs = str(contents).encode()
+        obj.save()
+        return HttpResponse(True)
+    except:
+        return HttpResponse(False)
+
+
 
 def daily_all_confirm(request):
     x = datetime.datetime.now() if _r_start_date_ is None else datetime.datetime.strptime(_r_start_date_, '%m/%d/%Y')
@@ -1008,7 +765,11 @@ def daily_all_confirm(request):
     for data in _data_:
         data.status = True
         data.save()
-    return daily_manage(request, init_global=False)
+    log.info("daily_all_confirm > 用户（ " + request.user.username + ' )')
+    log.info("daily_all_confirm > IP地址：" + repr(get_client_ip(request)))
+    log.info("daily_all_confirm > 发布 ( " + repr([x[0] for x in _data_.values_list('id')]) + " )")
+
+    return daily_manage_lab(request, init_global=False)
 
 def daily_all_unconfirm(request):
     x = datetime.datetime.now() if _r_start_date_ is None else datetime.datetime.strptime(_r_start_date_, '%m/%d/%Y')
@@ -1017,7 +778,22 @@ def daily_all_unconfirm(request):
     for data in _data_:
         data.status = False
         data.save()
-    return daily_manage(request, init_global=False)
+    log.info("daily_all_unconfirm > 用户（ " + request.user.username + ' )')
+    log.info("daily_all_unconfirm > IP地址：" + repr(get_client_ip(request)))
+    log.info("daily_all_unconfirm > 取消发布 ( " + repr([x[0] for x in _data_.values_list('id')]) + " )")
+
+    return daily_manage_lab(request, init_global=False)
+
+def daily_all_delete(request):
+    log.info("daily_all_delete > 用户（ " + request.user.username + ' )')
+    log.info("daily_all_delete > IP地址：" + repr(get_client_ip(request)))
+    x = datetime.datetime.now() if _r_start_date_ is None else datetime.datetime.strptime(_r_start_date_, '%m/%d/%Y')
+    y = datetime.datetime.now() if _r_end_date_ is None else datetime.datetime.strptime(_r_end_date_, '%m/%d/%Y')
+    delete_rows = models.DailyReport.objects.filter(date__range=(x, y))
+    log.info("daily_all_delete > 删除全部 ( " + repr([x[0] for x in delete_rows.values_list('id')]) + " )")
+    delete_rows.delete()
+    # models.DailyReport.objects.filter(date__range=(x, y)).delete()
+    return daily_manage_lab(request, init_global=False)
 
 
 def data_init(request):
