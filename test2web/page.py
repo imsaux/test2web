@@ -414,8 +414,8 @@ def daily_view_search(request):
     _r_reasons_ = r_reasons
     _from = datetime.datetime.strptime(r_start_date, '%m/%d/%Y')
     _to = datetime.datetime.strptime(r_end_date, '%m/%d/%Y')
-    _sites = ['全部'] + [x.name for x in models.Site.objects.all().order_by('order')]
-    _reasons = ['全部'] + [x.name for x in models.Reason.objects.all()]
+    _sites = ['全部'] + [''.join([x[0] for x in pinyin(x.name, style=Style.FIRST_LETTER)])+x.name for x in models.Site.objects.all().order_by('order')]
+    _reasons = [x.name for x in models.Reason.objects.all().order_by('name')]
 
     if r_site == '全部':
         all_data = _get_daily_data(_from=_from, _to=_to, _is_confirm=True, _reasons=r_reasons)
@@ -456,9 +456,9 @@ def daily_view(request, _date=None):
         _date = datetime.datetime.now()
     # _range_from, _range_to = _get_range_date(_date)
     _init_global()
-    _sites = ['全部'] + [x.name for x in models.Site.objects.all().order_by('order')]
+    _sites = ['全部'] + [''.join([x[0] for x in pinyin(x.name, style=Style.FIRST_LETTER)])+x.name for x in models.Site.objects.all().order_by('order')]
     _all_data_ = _get_daily_data(_from=_date, _to=_date, _is_confirm=True)
-    _reasons = ['全部'] + [x.name for x in models.Reason.objects.all()]
+    _reasons = [x.name for x in models.Reason.objects.all().order_by('name')]
     return render_to_response(
         'base.html',
         {
