@@ -555,7 +555,8 @@ def daily_delete(request, _id):
     log.info("daily_delete > 删除记录（ #" + repr(_id) + ' )')
     obj = models.DailyReport.objects.get(id=_id)
     obj.delete()
-    return daily_manage_lab(request, init_global=False)
+    # return daily_manage_lab(request, init_global=False)
+    return HttpResponseRedirect(reverse('daily_manage_lab'))
 
 def daily_confirm(request, _id):
     log.info("daily_confirm > 用户（ " + request.user.username + ' )')
@@ -563,7 +564,8 @@ def daily_confirm(request, _id):
     obj = models.DailyReport.objects.get(id=_id)
     obj.status = True
     obj.save()
-    return daily_manage_lab(request, init_global=False, loc=_id)
+    # return daily_manage_lab(request, init_global=False, loc=_id)
+    return HttpResponseRedirect(reverse('daily_manage_lab'))
 
 def daily_unconfirm(request, _id):
     log.info("daily_unconfirm > 用户（ " + request.user.username + ' )')
@@ -572,7 +574,7 @@ def daily_unconfirm(request, _id):
     obj = models.DailyReport.objects.get(id=_id)
     obj.status = False
     obj.save()
-    return daily_manage_lab(request, init_global=False, loc=_id)
+    return HttpResponseRedirect(reverse('daily_manage_lab'))
 
 def _save_dailyreport(dailyreport_id, site=None, date=None, warn=None, carriages=None, imgs=None):
     if dailyreport_id is None:
@@ -659,10 +661,14 @@ def daily_save_data(request):
             _reason
         )
         log.info("daily_save_data > 保存成功 " + repr(_id) + " -> " + repr(id))
-        return daily_manage_lab(request, init_global=False)
+        # return HttpResponseRedirect(
+        #     reverse('daily_manage_lab', args=(request,), kwargs={'init_global': False}))
+        return HttpResponse(True)
     except:
         log.info("daily_save_data > 保存失败" + repr(_id) + " -> " + repr(id))
-        return daily_manage_lab(request, init_global=False)
+        return HttpResponse(False)
+        # return HttpResponseRedirect(
+        #     reverse('daily_manage_lab', args=(request,), kwargs={'init_global': False}))
 
 def daily_get_pic(request):
     log.info("daily_get_pic > " + request.user.username)
@@ -721,7 +727,9 @@ def daily_delete_selected(request):
     log.info("daily_delete_selected > 用户（ " + request.user.username + ' )')
     log.info("daily_delete_selected > IP地址：" + repr(get_client_ip(request)))
     log.info("daily_delete_selected > 删除 ( " + repr(ids) + " )")
-    return daily_manage_lab(request, init_global=False)
+    return HttpResponseRedirect(
+        reverse('daily_manage_lab'))
+
 
 def daily_confirm_selected(request):
     ids = [int(x.split('_')[1]) for x in request.POST['data'].split('@@@@@')[1:]]
@@ -731,8 +739,10 @@ def daily_confirm_selected(request):
     log.info("daily_confirm_selected > 用户（ " + request.user.username + ' )')
     log.info("daily_confirm_selected > IP地址：" + repr(get_client_ip(request)))
     log.info("daily_confirm_selected > 发布 ( " + repr(ids) + " )")
-        
-    return daily_manage_lab(request, init_global=False)
+
+    return HttpResponseRedirect(
+        reverse('daily_manage_lab'))
+
 
 def daily_unconfirm_selected(request):
     ids = [int(x.split('_')[1]) for x in request.POST['data'].split('@@@@@')[1:]]
@@ -743,7 +753,9 @@ def daily_unconfirm_selected(request):
     log.info("daily_unconfirm_selected > IP地址：" + repr(get_client_ip(request)))
     log.info("daily_unconfirm_selected > 取消发布 ( " + repr(ids) + " )")
 
-    return daily_manage_lab(request, init_global=False)
+    return HttpResponseRedirect(
+        reverse('daily_manage_lab'))
+
 
 def daily_save_pic(request):
     try:
@@ -769,7 +781,9 @@ def daily_all_confirm(request):
     log.info("daily_all_confirm > IP地址：" + repr(get_client_ip(request)))
     log.info("daily_all_confirm > 发布 ( " + repr([x[0] for x in _data_.values_list('id')]) + " )")
 
-    return daily_manage_lab(request, init_global=False)
+    return HttpResponseRedirect(
+        reverse('daily_manage_lab'))
+
 
 def daily_all_unconfirm(request):
     x = datetime.datetime.now() if _r_start_date_ is None else datetime.datetime.strptime(_r_start_date_, '%m/%d/%Y')
@@ -782,7 +796,9 @@ def daily_all_unconfirm(request):
     log.info("daily_all_unconfirm > IP地址：" + repr(get_client_ip(request)))
     log.info("daily_all_unconfirm > 取消发布 ( " + repr([x[0] for x in _data_.values_list('id')]) + " )")
 
-    return daily_manage_lab(request, init_global=False)
+    return HttpResponseRedirect(
+        reverse('daily_manage_lab'))
+
 
 def daily_all_delete(request):
     log.info("daily_all_delete > 用户（ " + request.user.username + ' )')
@@ -793,7 +809,8 @@ def daily_all_delete(request):
     log.info("daily_all_delete > 删除全部 ( " + repr([x[0] for x in delete_rows.values_list('id')]) + " )")
     delete_rows.delete()
     # models.DailyReport.objects.filter(date__range=(x, y)).delete()
-    return daily_manage_lab(request, init_global=False)
+    return HttpResponseRedirect(
+        reverse('daily_manage_lab'))
 
 
 def data_init(request):

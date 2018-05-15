@@ -6,6 +6,11 @@ function del(){
     }
 };
 
+function eKeyup(id){
+    var o = document.getElementById(id);
+    o.style.backgroundColor = "yellow";
+};
+
 var ckinit = true;
 function chall_changed() {
     var oneches=document.getElementsByName("sels");
@@ -121,15 +126,6 @@ function sel_post(URL, PARAMS) {
     return temp;
 };
 
-function show_or_none(id){
-    var ele=document.getElementById(id);
-    if (ele.style.display=="none"){
-        ele.style.display='block';
-    }else{
-        ele.style.display='none';
-    }
-};
-
 function getfocus(id, sp){
     var td = document.getElementById(id);
     var x_reason = '';
@@ -161,7 +157,7 @@ function data_save(){
 }
 
 function lostfocus(id, sp, needReturn){
-    var td = document.getElementById(id);
+    var td = document.getElementById("td_"+id);
     if(td.children.length>0 && td.children[0].nodeName!=sp){
         var vals = '';
         for(i=0; i<td.children.length; i++){
@@ -170,14 +166,16 @@ function lostfocus(id, sp, needReturn){
                     if(vals=='') {
                         vals = td.children[i].value;
                     }else{
-                        vals = vals + '、'+td.children[i].value+'<br>';
+                        vals = vals + '、'+td.children[i].value;
                     }
                 }
             }
         }
 
         if(!needReturn){
-            td.innerHTML = vals;
+            td.innerText = vals;
+            var o = document.getElementById('td_op_'+id);
+            o.style.backgroundColor = "yellow";
         }else{
             return vals;
         }
@@ -209,13 +207,13 @@ function build_pic_div(ele){
         _new_div_pic.style.overflow = "auto";
 
         var _new_a_pic = document.createElement('a');
-        _new_a_pic.href = "#";
+        _new_a_pic.href = "javascript:void(0);";
         _new_a_pic.title = "图片";
         _new_a_pic.innerHTML = "保存";
         _new_a_pic.onclick = function (ev) {
             save_pic(ele.id);
-            var o = ev.srcElement.parentElement.parentElement;
-            o.parentElement.removeChild(o);
+            {#var o = ev.srcElement.parentElement.parentElement;#}
+            {#o.parentElement.removeChild(o);#}
         }
         _new_td_pic.appendChild(_new_div_pic);
         _new_td_pic.appendChild(_new_a_pic);
@@ -250,6 +248,10 @@ function save_pic(id){
             'data': contents,
         },
         success: function (ret) {
+            if (ret=="True"){
+                parent = pic_obj.parentElement.parentElement.parentElement;
+                parent.removeChild(pic_obj.parentElement.parentElement);
+            }
         }});
 };
 
@@ -272,14 +274,24 @@ function create_new(){
     _new_td_1.setAttribute("class", "center");
     _new_td_1.setAttribute("contenteditable", "true");
     _new_td_1.innerHTML = "";
+    _new_td_1.onkeyup = function (ev) {
+        eKeyup('td_op_new');
+    };
+    _new_td_1.onclick = function (ev) {
+        lostfocus('new', '<br>', false);
+    }
+
 
     var _new_td_2 = document.createElement('td');
     _new_td_2.style.width = "8%";
     _new_td_2.setAttribute("class", "center");
     _new_td_2.setAttribute("contenteditable", "true");
     _new_td_2.innerHTML = "0";
-    _new_td_2.onfocus = function (ev) {
-        lostfocus('td_new', '<br>');
+    _new_td_2.onkeyup = function (ev) {
+        eKeyup('td_op_new');
+    };
+    _new_td_2.onclick = function (ev) {
+        lostfocus('new', '<br>', false);
     }
 
     var _new_td_3 = document.createElement('td');
@@ -287,8 +299,11 @@ function create_new(){
     _new_td_3.setAttribute("class", "center");
     _new_td_3.setAttribute("contenteditable", "true");
     _new_td_3.innerHTML = "无";
-    _new_td_3.onfocus = onfocus = function (ev) {
-        lostfocus('td_new', '<br>');
+    _new_td_3.onkeyup = function (ev) {
+        eKeyup('td_op_new');
+    };
+    _new_td_3.onclick = function (ev) {
+        lostfocus('new', '<br>', false);
     }
 
     var _new_td_4 = document.createElement('td');
@@ -296,8 +311,11 @@ function create_new(){
     _new_td_4.setAttribute("class", "center");
     _new_td_4.setAttribute("contenteditable", "true");
     _new_td_4.innerHTML = "";
-    _new_td_4.onfocus = onfocus = function (ev) {
-        lostfocus('td_new', '<br>');
+    _new_td_4.onkeyup = function (ev) {
+        eKeyup('td_op_new');
+    };
+    _new_td_4.onclick = function (ev) {
+        lostfocus('new', '<br>', false);
     }
 
     var _new_td_5 = document.createElement('td');
@@ -305,22 +323,27 @@ function create_new(){
     _new_td_5.setAttribute("class", "center");
     _new_td_5.setAttribute("contenteditable", "true");
     _new_td_5.innerHTML = "";
-    _new_td_5.onfocus = onfocus = function (ev) {
-        lostfocus('td_new', '<br>');
-    }
+    _new_td_5.onkeyup = function (ev) {
+        eKeyup('td_op_new');
+    };
+    _new_td_5.onclick = function (ev) {
+        lostfocus('new', '<br>');
+    };
 
     var _new_td_6 = document.createElement('td');
-    _new_td_6.style.width = "15%";
+    _new_td_6.style.width = "10%";
     _new_td_6.setAttribute("class", "center");
     _new_td_6.setAttribute("id", "td_new");
-    _new_td_6.setAttribute("contenteditable", "true");
     _new_td_6.innerHTML = "";
-    _new_td_6.onfocus = onfocus = function (ev) {
+    _new_td_6.onclick = function (ev) {
         getfocus('td_new', '<br>');
-    }
+    };
+
 
     var _new_td_7 = document.createElement('td');
     _new_td_7.style.width = "10%";
+    _new_td_7.style.backgroundColor = "darkgreen";
+    _new_td_7.id = "td_op_new";
     _new_td_7.setAttribute("class", "center");
 
     var _new_td_7_a_i_1 = document.createElement('i');
@@ -337,22 +360,22 @@ function create_new(){
     _new_td_7_a_span_2.innerHTML = " 图片";
 
     var _new_td_7_a_save = document.createElement('a');
-    _new_td_7_a_save.href = "#";
+    _new_td_7_a_save.href = "javascript:void(0);";
     _new_td_7_a_save.onclick = function (ev) {
         save_data('new');
-    }
+    };
     _new_td_7_a_save.title = "保存";
     _new_td_7_a_save.setAttribute("class", "btn btn-success");
     _new_td_7_a_save.appendChild(_new_td_7_a_i_1);
     _new_td_7_a_save.appendChild(_new_td_7_a_span_1);
 
     var _new_td_7_a_pic = document.createElement('a');
-    _new_td_7_a_pic.href = "#";
+    _new_td_7_a_pic.href = "javascript:void(0);";
     _new_td_7_a_pic.setAttribute("class", "btn btn-success");
     _new_td_7_a_pic.setAttribute("id", "new");
     _new_td_7_a_pic.onclick = function (ev) {
         build_pic_div(this)
-    }
+    };
     _new_td_7_a_pic.title = "图片";
     _new_td_7_a_pic.appendChild(_new_td_7_a_i_2);
     _new_td_7_a_pic.appendChild(_new_td_7_a_span_2);
@@ -377,6 +400,7 @@ function create_new(){
 
 function save_data(id){
     var trObj = document.getElementById("tr_"+String(id));
+    var trObjOp = document.getElementById("td_op_"+String(id));
     var contents = id;
     for (i=1; i<7; i++){
         var ele = trObj.children[i];
@@ -384,15 +408,20 @@ function save_data(id){
             contents += "@@@@@" + ele.innerText;
         }
     }
-    sel_post('/daily_save_data/', contents);
-    // $.ajax({
-    // type: 'POST',
-    // url: "/daily_save_data/",
-    // data: {
-    //     'data': contents,
-    // },
-    // success: function (ret) {
-    // }});
+    {#sel_post('/daily_save_data/', contents);#}
+    $.ajax({
+    type: 'POST',
+    url: "/daily_save_data/",
+    data: {
+        'data': contents,
+    },
+    success: function (ret) {
+        if(ret=="True"){
+            trObjOp.style.backgroundColor = "darkgreen";
+        }else{
+            trObjOp.style.backgroundColor = "red";
+        }
+    }});
 };
 
 function search_data(){
@@ -422,7 +451,7 @@ function search_data(){
 
 </script>
 
-<div class="row-fluid">
+<div class="row-fluid" onload="test()">
     <div class="box span12">
         <div class="box-header" data-original-title>
             <h2>
@@ -491,14 +520,14 @@ function search_data(){
                             {% endif %}
 
                             <td style="width:8%;">{{ item.1 }}</td>
-                            <td style="width:8%;" class="center" contenteditable="true" onfocus="lostfocus('td_{{ item.0 }}', '<br>', false)">{{ item.2 }}</td>
-                            <td style="width:15%;" class="center" contenteditable="true" onfocus="lostfocus('td_{{ item.0 }}', '<br>', false)">{{ item.3 }}</td>
-                            <td style="width:15%;" class="center" contenteditable="true" onfocus="lostfocus('td_{{ item.0 }}', '<br>', false)">{{ item.4 }}</td>
-                            <td style="width:15%;" class="center" contenteditable="true" onfocus="lostfocus('td_{{ item.0 }}', '<br>', false)">{{ item.5 }}</td>
-                            <td id="td_{{ item.0 }}" style="width:10%;" class="center" contenteditable="true" onfocus="getfocus('td_{{ item.0 }}', '<br>')">
+                            <td style="width:8%;" class="center" contenteditable="true" onkeyup="eKeyup('td_op_{{ item.0 }}')" onclick="lostfocus('{{ item.0 }}', '<br>', false)">{{ item.2 }}</td>
+                            <td style="width:15%;" class="center" contenteditable="true" onkeyup="eKeyup('td_op_{{ item.0 }}')" onclick="lostfocus('{{ item.0 }}', '<br>', false)">{{ item.3 }}</td>
+                            <td style="width:15%;" class="center" contenteditable="true" onkeyup="eKeyup('td_op_{{ item.0 }}')" onclick="lostfocus('{{ item.0 }}', '<br>', false)">{{ item.4 }}</td>
+                            <td style="width:15%;" class="center" contenteditable="true" onkeyup="eKeyup('td_op_{{ item.0 }}')" onclick="lostfocus('{{ item.0 }}', '<br>', false)">{{ item.5 }}</td>
+                            <td id="td_{{ item.0 }}" style="width:10%;" class="center" onclick="getfocus('td_{{ item.0 }}', '<br>')">
                             {{ item.6 }}
                             </td>
-                            <td class="center"  style="width:10%;">
+                            <td id="td_op_{{ item.0 }}" class="center"  style="width:10%; background: darkgreen;">
                                 <a href="javascript:void(0)" onclick="save_data({{ item.0 }})" title="保存" class="btn btn-success">
                                     <i class="icon-envelope"></i>
                                     <span class="hidden-tablet"> 保存</span>
