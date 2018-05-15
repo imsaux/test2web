@@ -3,6 +3,7 @@ function del(){
     if(!confirm("确认要删除？"))
     {
         window.event.returnValue = false;
+        return false;
     }
 };
 
@@ -193,6 +194,7 @@ function build_pic_div(ele){
     }
     if (_parent.nodeName=='TBODY'){
         var _new_tr = document.createElement('tr');
+        _new_tr.setAttribute("id", "tr_pic_" + ele.id);
         var _new_td_name = document.createElement('td');
         _new_td_name.innerHTML = "图片";
         var _new_td_pic = document.createElement('td');
@@ -205,18 +207,20 @@ function build_pic_div(ele){
         _new_div_pic.style.height = "300px";
         _new_div_pic.style.border = "1px solid";
         _new_div_pic.style.overflow = "auto";
-
-        var _new_a_pic = document.createElement('a');
-        _new_a_pic.href = "javascript:void(0);";
-        _new_a_pic.title = "图片";
-        _new_a_pic.innerHTML = "保存";
-        _new_a_pic.onclick = function (ev) {
-            save_pic(ele.id);
+        _new_div_pic.onkeyup = function (ev) {
+            eKeyup('td_op_' + ele.id);
+        };
+        {#var _new_a_pic = document.createElement('a');#}
+        {#_new_a_pic.href = "javascript:void(0);";#}
+        {#_new_a_pic.title = "图片";#}
+        {#_new_a_pic.innerHTML = "保存";#}
+        {#_new_a_pic.onclick = function (ev) {#}
+        {#    save_pic(ele.id);#}
             {#var o = ev.srcElement.parentElement.parentElement;#}
             {#o.parentElement.removeChild(o);#}
-        }
+        {#}#}
         _new_td_pic.appendChild(_new_div_pic);
-        _new_td_pic.appendChild(_new_a_pic);
+        {#_new_td_pic.appendChild(_new_a_pic);#}
         _new_tr.appendChild(_new_td_name);
         _new_tr.appendChild(_new_td_pic);
         _current_tr.insertAdjacentElement("afterEnd", _new_tr);
@@ -237,9 +241,9 @@ function get_pic(id){
         }});
 };
 
-function save_pic(id){
+function save_pic(id, newid){
     var pic_obj = document.getElementById("div_"+String(id));
-    var contents = String(id) + "@@@@@" + pic_obj.innerHTML;
+    var contents = String(newid) + "@@@@@" + pic_obj.innerHTML;
 
     $.ajax({
         type: 'POST',
@@ -416,8 +420,43 @@ function save_data(id){
         'data': contents,
     },
     success: function (ret) {
-        if(ret=="True"){
+        if(ret!="-1"){
             trObjOp.style.backgroundColor = "darkgreen";
+            var pic_obj = document.getElementById("div_"+String(id));
+
+            if (pic_obj!=null){
+                save_pic(id, ret);
+            }
+            trObj.id = "tr_" + ret;
+            trObjOp.id = "td_op_" + ret;
+            var o3 = trObjOp.children[3];
+            if (o3.hasAttribute("id")){
+                o3.id = ret;
+            }
+            var o0 = trObjOp.children[0];
+            o0.onclick=function () {
+                save_data(ret);
+            }
+            e0 = trObj.children[0];
+            e0.children[0].id = "cb_" + ret;
+            e1 = trObj.children[1];
+            e1.removeAttribute("contenteditable");
+            e6 = trObj.children[6];
+            e6.id = "td_" + ret;
+            e6.onclick = function () {
+                getfocus("td_"+ret, '<br>');
+            }
+            for(i=2; i<6; i++){
+                e = trObj.children[i];
+                if(e.nodeName=="TD"){
+                    e.onkeyup=function () {
+                        eKeyup("td_op_" + String(ret));
+                    };
+                    e.onclick=function () {
+                        lostfocus(String(ret), "<br>", false);
+                    }
+                }
+            }
         }else{
             trObjOp.style.backgroundColor = "red";
         }
@@ -586,11 +625,11 @@ function search_data(){
                             <span class="hidden-tablet"> 全部取消发布</span>
                         </a>
 
-                        <a href="javascript:delete_selected()" onclick="return del()"  class="btn btn-success">
+                        <a href="javascript:void(0)" onclick="del();delete_selected();"  class="btn btn-success">
                             <i class="icon-envelope"></i>
                             <span class="hidden-tablet"> 删除</span>
                         </a>
-                        <a href="javascript:delete_all()" onclick="return del()"  class="btn btn-success">
+                        <a href="javascript:void(0)" onclick="del();delete_all();"  class="btn btn-success">
                             <i class="icon-envelope"></i>
                             <span class="hidden-tablet"> 全部删除</span>
                         </a>

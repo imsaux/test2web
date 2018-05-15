@@ -663,10 +663,10 @@ def daily_save_data(request):
         log.info("daily_save_data > 保存成功 " + repr(_id) + " -> " + repr(id))
         # return HttpResponseRedirect(
         #     reverse('daily_manage_lab', args=(request,), kwargs={'init_global': False}))
-        return HttpResponse(True)
+        return HttpResponse(id)
     except:
         log.info("daily_save_data > 保存失败" + repr(_id) + " -> " + repr(id))
-        return HttpResponse(False)
+        return HttpResponse(-1)
         # return HttpResponseRedirect(
         #     reverse('daily_manage_lab', args=(request,), kwargs={'init_global': False}))
 
@@ -761,7 +761,11 @@ def daily_save_pic(request):
     try:
         drObjId = request.POST['data'].split('@@@@@')[0]
         contents = request.POST['data'].split('@@@@@')[1]
-        obj = models.DailyReport.objects.get(id=drObjId)
+        if drObjId != "new":
+            obj = models.DailyReport.objects.get(id=drObjId)
+        else:
+            obj = models.DailyReport.objects.all().order_by("id").last()
+
         obj.imgs = str(contents).encode()
         obj.save()
         return HttpResponse(True)
