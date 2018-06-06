@@ -360,7 +360,7 @@ def daily_manage_search(request):
     _from = datetime.datetime.strptime(r_start_date, '%m/%d/%Y')
     _to = datetime.datetime.strptime(r_end_date, '%m/%d/%Y')
     _sites_name = [x.name for x in models.Site.objects.all().order_by('order')]
-    _reasons = [x.name for x in models.Reason.objects.all()]
+    _reasons = [x.name for x in models.Reason.objects.all().order_by('name')]
 
 
 
