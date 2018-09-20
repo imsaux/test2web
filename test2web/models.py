@@ -69,3 +69,6 @@ class DailyReport(models.Model):
     carriages_count = models.IntegerField(default=0)
     imgs = models.BinaryField(blank=True)
     status = models.BooleanField(default=False)   # 审批状态
+
+class Online(models.Model):
+    url = models.TextField(default='http://', blank=True)

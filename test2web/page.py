@@ -27,6 +27,8 @@ _r_end_date_ = None
 _r_site_ = None
 _r_reasons_ = None
 
+
+
 # 登录表单模型
 class UserForm(forms.Form):
     username = forms.CharField(label='用户名', max_length=100)
@@ -375,11 +377,12 @@ def daily_manage_search(request):
     # _sites_name = [x.name for x in models.Site.objects.all().order_by('order')]
     # _reasons = [x.name for x in models.Reason.objects.all()]
     all_data = _get_daily_data(_from=_from, _to=_to, _site_name=r_site,  _reasons=r_reasons)
-
+    _url = models.Online.objects.last()
 
     return render_to_response(
         'base.html',
         {
+            'resouce_url': _url.url,
             'box_content': _redirect(
                 'daily_manage_lab',
                 {
@@ -422,11 +425,12 @@ def daily_view_search(request):
 
     else:
         all_data = _get_daily_data(_from=_from, _to=_to, _site_name=r_site, _is_confirm=True,  _reasons=r_reasons)
-
+    _url = models.Online.objects.last()
 
     return render_to_response(
         'base.html',
         {
+            'resouce_url': _url.url,
             'box_content': _redirect(
                 'daily_view',
                 {
@@ -458,10 +462,12 @@ def daily_view(request, _date=None):
     _init_global()
     _sites = ['全部'] + [x.name for x in models.Site.objects.all().order_by('order')]
     _all_data_ = _get_daily_data(_from=_date, _to=_date, _is_confirm=True)
+    _url = models.Online.objects.last()
     _reasons = ['全部'] + [x.name for x in models.Reason.objects.all()]
     return render_to_response(
         'base.html',
         {
+            'resouce_url': _url.url,
             'box_content': _redirect(
                 'daily_view',
                 {
@@ -493,11 +499,12 @@ def daily_manage_lab(request, _date=None, init_global=True, loc=None):
     _sites_code = [''.join([x[0] for x in pinyin(x.name, style=Style.FIRST_LETTER)])+x.name for x in models.Site.objects.all().order_by('order')]
     _sites_name = [x.name for x in models.Site.objects.all().order_by('order')]
     _reasons = [x.name for x in models.Reason.objects.all().order_by('name')]
-
+    _url = models.Online.objects.last()
     all_data = _get_daily_data()
     return render_to_response(
         'base.html',
         {
+            'resouce_url': _url.url,
             'box_content': _redirect(
                 'daily_manage_lab',
                 {
@@ -675,10 +682,12 @@ def daily_detail_img(request, _id):
     _data_info = models.DailyReport.objects.get(id=_id)
     _title = _datetime_format(date=_data_info.date)
     _r = str(_data_info.imgs, encoding='utf-8')
+    _url = models.Online.objects.last()
 
     return render_to_response(
         'base.html',
         {
+            'resouce_url': _url.url,
             'box_content': _redirect(
                 'daily_detail_img',
                 {
