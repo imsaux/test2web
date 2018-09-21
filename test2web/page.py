@@ -791,8 +791,9 @@ def daily_unconfirm_selected(request):
 @login_required
 def daily_save_pic(request):
     try:
-        drObjId = request.POST['data'].split('@@@@@')[0]
-        contents = request.POST['data'].split('@@@@@')[1]
+        _tmp = request.POST['pic'].split('@@@@@')
+        drObjId = _tmp[0]
+        contents = _tmp[1]
         if drObjId != "new":
             obj = models.DailyReport.objects.get(id=drObjId)
         else:
@@ -802,7 +803,7 @@ def daily_save_pic(request):
         obj.save()
         return HttpResponse(True)
     except:
-        return HttpResponse(False)
+        return HttpResponse(repr(_tmp))
 
 
 @login_required

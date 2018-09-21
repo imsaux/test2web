@@ -241,15 +241,15 @@ function get_pic(id){
         }});
 };
 
-function save_pic(id, newid){
+function save_pic(id){
     var pic_obj = document.getElementById("div_"+String(id));
-    var contents = String(newid) + "@@@@@" + pic_obj.innerHTML;
+    var contents = String(id) + "@@@@@" + pic_obj.innerHTML;
 
     $.ajax({
         type: 'POST',
         url: "/daily_save_pic/",
         data: {
-            'data': contents,
+            'pic': contents,
         },
         success: function (ret) {
             if (ret=="True"){
@@ -425,7 +425,7 @@ function save_data(id){
             var pic_obj = document.getElementById("div_"+String(id));
 
             if (pic_obj!=null){
-                save_pic(id, ret);
+                save_pic(id);
             }
             trObj.id = "tr_" + ret;
             trObjOp.id = "td_op_" + ret;
