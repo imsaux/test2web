@@ -71,4 +71,4 @@ class DailyReport(models.Model):
     status = models.BooleanField(default=False)   # 审批状态
 
 class Online(models.Model):
-    url = models.TextField(blank=True, default='http://')
+    url = models.TextField(default='http://', blank=True)

@@ -244,7 +244,6 @@ function get_pic(id){
 function save_pic(id){
     var pic_obj = document.getElementById("div_"+String(id));
     var contents = String(id) + "@@@@@" + pic_obj.innerHTML;
-
     $.ajax({
         type: 'POST',
         url: "/daily_save_pic/",
@@ -427,33 +426,33 @@ function save_data(id){
             if (pic_obj!=null){
                 save_pic(id);
             }
-            trObj.id = "tr_" + ret;
-            trObjOp.id = "td_op_" + ret;
+            trObj.id = "tr_" + id;
+            trObjOp.id = "td_op_" + id;
             var o3 = trObjOp.children[3];
             if (o3.hasAttribute("id")){
-                o3.id = ret;
+                o3.id = id;
             }
             var o0 = trObjOp.children[0];
             o0.onclick=function () {
-                save_data(ret);
+                save_data(id);
             }
             e0 = trObj.children[0];
-            e0.children[0].id = "cb_" + ret;
+            e0.children[0].id = "cb_" + id;
             e1 = trObj.children[1];
             e1.removeAttribute("contenteditable");
             e6 = trObj.children[6];
-            e6.id = "td_" + ret;
+            e6.id = "td_" + id;
             e6.onclick = function () {
-                getfocus("td_"+ret, '<br>');
+                getfocus("td_"+id, '<br>');
             }
             for(i=2; i<6; i++){
                 e = trObj.children[i];
                 if(e.nodeName=="TD"){
                     e.onkeyup=function () {
-                        eKeyup("td_op_" + String(ret));
+                        eKeyup("td_op_" + String(id));
                     };
                     e.onclick=function () {
-                        lostfocus(String(ret), "<br>", false);
+                        lostfocus(String(id), "<br>", false);
                     }
                 }
             }

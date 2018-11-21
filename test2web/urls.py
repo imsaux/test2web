@@ -19,6 +19,8 @@ from django.conf.urls.static import static, serve
 from test2web.page import *
 from django.contrib import admin
 
+
+
 urlpatterns = [
             url(r'^daily_view/$', daily_view, name='daily_view'), # 展示
             url(r'^daily_manage_lab/$', daily_manage_lab, name='daily_manage_lab'), # 展示
@@ -40,9 +42,7 @@ urlpatterns = [
             url(r'^daily_unconfirm_selected/$', daily_unconfirm_selected, name='daily_unconfirm_selected'),
             url(r'^daily_save_pic/$', daily_save_pic, name='daily_save_pic'),
             url(r'^daily_get_pic/$', daily_get_pic, name='daily_get_pic'),
-
-            url(r'^version/$', VERSION, name='version'),
-
+            url(r'^version/$', VERSION, name='VERSION'),            
             url(r'^data_init/$', data_init, name='data_init'),
             url(r'^admin/', admin.site.urls, name='admin'),
             url(r'^$', login),
@@ -51,10 +51,6 @@ urlpatterns = [
             url(r'^login/', login, name='login'),
             url(r'^logout/$', logout, name='logout'),
             # 生产环境使用
-            # url(r'^static/(?P<path>.*)$', serve, {'document_root': settings.STATIC_ROOT}),
-            # url(r'^upload/(?P<path>.*)$', serve, {'document_root': settings.UPLOAD_ROOT}),
-              ]
-# 开发环境使用
-urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
-urlpatterns += static(settings.UPLOAD_URL, document_root=settings.UPLOAD_ROOT)
-
+            url(r'^static/(?P<path>.*)$', serve, {'document_root': settings.STATIC_ROOT}),
+            url(r'^upload/(?P<path>.*)$', serve, {'document_root': settings.UPLOAD_ROOT}),
+            ]

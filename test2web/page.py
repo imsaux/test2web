@@ -1,5 +1,5 @@
 # -*- encoding:utf-8 -*-
-from django import forms
+from django.forms import Form
 from test2web import models
 from datetime import datetime, tzinfo, timedelta, timezone
 from django.shortcuts import render, render_to_response
@@ -16,6 +16,7 @@ from django.http import FileResponse
 from pypinyin import pinyin, Style
 import datetime
 import json
+import locale
 import logging, inspect, os
 
 
@@ -27,18 +28,17 @@ _r_site_ = None
 _r_reasons_ = None
 
 
+
 # 登录表单模型
 class UserForm(forms.Form):
     username = forms.CharField(label='用户名', max_length=100)
     password = forms.CharField(label='密码', widget=forms.PasswordInput())
-
 
 # 注册表单模型
 class UserRegisterForm(forms.Form):
     username = forms.CharField(label='用户名', max_length=100)
     password = forms.CharField(label='密码', widget=forms.PasswordInput())
     is_staff = forms.BooleanField(label='管理员权限', widget=forms.CheckboxInput(), required=False)
-
 
 def _datetime_format(date=None, mode=1):
     if date is None:
@@ -154,8 +154,6 @@ def file_download(request, _file):
     response['Content-Disposition'] = 'attachment;filename="%s"' % (urlquote(_file))
     return response
 
-
-@login_required
 def export_xlsx(request):
     wb = Workbook()
     ws = wb.active
@@ -345,8 +343,6 @@ def _init_global():
     _r_site_ = None
     _r_reasons_ = None
 
-
-@login_required
 def daily_manage_search(request):
     global _r_start_date_, _r_end_date_ , _r_site_, _r_reasons_
     r_site = request.POST['r_site']
@@ -360,7 +356,7 @@ def daily_manage_search(request):
     _from = datetime.datetime.strptime(r_start_date, '%m/%d/%Y')
     _to = datetime.datetime.strptime(r_end_date, '%m/%d/%Y')
     _sites_name = [x.name for x in models.Site.objects.all().order_by('order')]
-    _reasons = [x.name for x in models.Reason.objects.all().order_by('name')]
+    _reasons = [x.name for x in models.Reason.objects.all()]
 
 
 
@@ -381,11 +377,12 @@ def daily_manage_search(request):
     # _sites_name = [x.name for x in models.Site.objects.all().order_by('order')]
     # _reasons = [x.name for x in models.Reason.objects.all()]
     all_data = _get_daily_data(_from=_from, _to=_to, _site_name=r_site,  _reasons=r_reasons)
-
+    _url = models.Online.objects.last()
 
     return render_to_response(
         'base.html',
         {
+            'resouce_url': _url.url,
             'box_content': _redirect(
                 'daily_manage_lab',
                 {
@@ -406,7 +403,6 @@ def daily_manage_search(request):
             'user': request.user,
         }
     )
-
 
 def daily_view_search(request):
 
@@ -429,11 +425,12 @@ def daily_view_search(request):
 
     else:
         all_data = _get_daily_data(_from=_from, _to=_to, _site_name=r_site, _is_confirm=True,  _reasons=r_reasons)
-
+    _url = models.Online.objects.last()
 
     return render_to_response(
         'base.html',
         {
+            'resouce_url': _url.url,
             'box_content': _redirect(
                 'daily_view',
                 {
@@ -453,6 +450,8 @@ def daily_view_search(request):
     )
 
 
+
+
 def daily_view(request, _date=None):
     log.info("daily_view > 用户（ " + request.user.username + ' )')
     log.info("daily_view > IP（ " + request.META['REMOTE_ADDR'] + ' )')
@@ -463,10 +462,12 @@ def daily_view(request, _date=None):
     _init_global()
     _sites = ['全部'] + [x.name for x in models.Site.objects.all().order_by('order')]
     _all_data_ = _get_daily_data(_from=_date, _to=_date, _is_confirm=True)
+    _url = models.Online.objects.last()
     _reasons = ['全部'] + [x.name for x in models.Reason.objects.all()]
     return render_to_response(
         'base.html',
         {
+            'resouce_url': _url.url,
             'box_content': _redirect(
                 'daily_view',
                 {
@@ -485,7 +486,6 @@ def daily_view(request, _date=None):
         }
     )
 
-
 @login_required
 def daily_manage_lab(request, _date=None, init_global=True, loc=None):
     log.info("daily_manage_lab > 用户（ " + request.user.username + ' )')
@@ -499,11 +499,12 @@ def daily_manage_lab(request, _date=None, init_global=True, loc=None):
     _sites_code = [''.join([x[0] for x in pinyin(x.name, style=Style.FIRST_LETTER)])+x.name for x in models.Site.objects.all().order_by('order')]
     _sites_name = [x.name for x in models.Site.objects.all().order_by('order')]
     _reasons = [x.name for x in models.Reason.objects.all().order_by('name')]
-
+    _url = models.Online.objects.last()
     all_data = _get_daily_data()
     return render_to_response(
         'base.html',
         {
+            'resouce_url': _url.url,
             'box_content': _redirect(
                 'daily_manage_lab',
                 {
@@ -529,7 +530,6 @@ def daily_manage_lab(request, _date=None, init_global=True, loc=None):
         }
     )
 
-
 def get_client_ip(request):
     x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
     if x_forwarded_for:
@@ -537,7 +537,6 @@ def get_client_ip(request):
     else:
         ip = request.META.get('REMOTE_ADDR')
     return ip
-
 
 def daily_ajax_search(request):
     try:
@@ -552,37 +551,27 @@ def daily_ajax_search(request):
     except Exception as e:
         return HttpResponse(None)
 
-
-@login_required
 def daily_create_all(request):
     log.info("daily_create_all > 用户（ " + request.user.username + ' )')
     log.info("daily_create_all > 一键新增记录")
     _auto_create_daily_info()
     return HttpResponseRedirect(reverse('daily_manage_lab'))
 
-
-@login_required
 def daily_delete(request, _id):
     log.info("daily_delete > 用户（ " + request.user.username + ' )')
     log.info("daily_delete > 删除记录（ #" + repr(_id) + ' )')
     obj = models.DailyReport.objects.get(id=_id)
     obj.delete()
-    # return daily_manage_lab(request, init_global=False)
-    return HttpResponseRedirect(reverse('daily_manage_lab'))
+    return daily_manage_lab(request, init_global=False)
 
-
-@login_required
 def daily_confirm(request, _id):
     log.info("daily_confirm > 用户（ " + request.user.username + ' )')
     log.info("daily_confirm > 发布记录（ #" + repr(_id) + ' )')
     obj = models.DailyReport.objects.get(id=_id)
     obj.status = True
     obj.save()
-    # return daily_manage_lab(request, init_global=False, loc=_id)
-    return HttpResponseRedirect(reverse('daily_manage_lab'))
+    return daily_manage_lab(request, init_global=False, loc=_id)
 
-
-@login_required
 def daily_unconfirm(request, _id):
     log.info("daily_unconfirm > 用户（ " + request.user.username + ' )')
     log.info("daily_unconfirm > 取消发布记录（ #" + repr(_id) + ' )')
@@ -590,8 +579,7 @@ def daily_unconfirm(request, _id):
     obj = models.DailyReport.objects.get(id=_id)
     obj.status = False
     obj.save()
-    return HttpResponseRedirect(reverse('daily_manage_lab'))
-
+    return daily_manage_lab(request, init_global=False, loc=_id)
 
 def _save_dailyreport(dailyreport_id, site=None, date=None, warn=None, carriages=None, imgs=None):
     if dailyreport_id is None:
@@ -629,7 +617,6 @@ def _save_dailyreport(dailyreport_id, site=None, date=None, warn=None, carriages
         dailyreport_obj.save()
         return dailyreport_obj.id
 
-
 def _save_dailyreportmeta(date, site, problem, track):
     _new = models.DailyReport_Meta(
         date=date,
@@ -638,7 +625,6 @@ def _save_dailyreportmeta(date, site, problem, track):
         track=track
     )
     _new.save()
-
 
 def _save_dailyreportreason(dailyreport_id, reason):
     _dailyreport_obj = models.DailyReport.objects.get(id=dailyreport_id)
@@ -649,8 +635,6 @@ def _save_dailyreportreason(dailyreport_id, reason):
         _dailyreport_obj.reason.add(r)
     _dailyreport_obj.save()
 
-
-@login_required
 def daily_save_data(request):
 
     try:
@@ -682,17 +666,11 @@ def daily_save_data(request):
             _reason
         )
         log.info("daily_save_data > 保存成功 " + repr(_id) + " -> " + repr(id))
-        # return HttpResponseRedirect(
-        #     reverse('daily_manage_lab', args=(request,), kwargs={'init_global': False}))
-        return HttpResponse(id)
+        return daily_manage_lab(request, init_global=False)
     except:
         log.info("daily_save_data > 保存失败" + repr(_id) + " -> " + repr(id))
-        return HttpResponse(-1)
-        # return HttpResponseRedirect(
-        #     reverse('daily_manage_lab', args=(request,), kwargs={'init_global': False}))
+        return daily_manage_lab(request, init_global=False)
 
-
-@login_required
 def daily_get_pic(request):
     log.info("daily_get_pic > " + request.user.username)
     _id = request.POST['id']
@@ -700,16 +678,16 @@ def daily_get_pic(request):
     _dr = models.DailyReport.objects.get(id=_id)
     return HttpResponse(str(_dr.imgs, encoding='utf-8'))
 
-
-@login_required
 def daily_detail_img(request, _id):
     _data_info = models.DailyReport.objects.get(id=_id)
     _title = _datetime_format(date=_data_info.date)
     _r = str(_data_info.imgs, encoding='utf-8')
+    _url = models.Online.objects.last()
 
     return render_to_response(
         'base.html',
         {
+            'resouce_url': _url.url,
             'box_content': _redirect(
                 'daily_detail_img',
                 {
@@ -722,10 +700,8 @@ def daily_detail_img(request, _id):
         }
     )
 
-
 def date_now(request):
     return HttpResponse(_datetime_format(mode=2).encode())
-
 
 def _get_range_date(date, _startwith=8):
     if date.hour >= _startwith:
@@ -748,19 +724,14 @@ def _get_range_date(date, _startwith=8):
 
     return _start_date, _end_date
 
-
-@login_required
 def daily_delete_selected(request):
     ids = [int(x.split('_')[1]) for x in request.POST['data'].split('@@@@@')[1:]]
     models.DailyReport.objects.filter(id__in=ids).delete()
     log.info("daily_delete_selected > 用户（ " + request.user.username + ' )')
     log.info("daily_delete_selected > IP地址：" + repr(get_client_ip(request)))
     log.info("daily_delete_selected > 删除 ( " + repr(ids) + " )")
-    return HttpResponseRedirect(
-        reverse('daily_manage_lab'))
+    return daily_manage_lab(request, init_global=False)
 
-
-@login_required
 def daily_confirm_selected(request):
     ids = [int(x.split('_')[1]) for x in request.POST['data'].split('@@@@@')[1:]]
     for dr in models.DailyReport.objects.filter(id__in=ids):
@@ -769,12 +740,9 @@ def daily_confirm_selected(request):
     log.info("daily_confirm_selected > 用户（ " + request.user.username + ' )')
     log.info("daily_confirm_selected > IP地址：" + repr(get_client_ip(request)))
     log.info("daily_confirm_selected > 发布 ( " + repr(ids) + " )")
+        
+    return daily_manage_lab(request, init_global=False)
 
-    return HttpResponseRedirect(
-        reverse('daily_manage_lab'))
-
-
-@login_required
 def daily_unconfirm_selected(request):
     ids = [int(x.split('_')[1]) for x in request.POST['data'].split('@@@@@')[1:]]
     for dr in models.DailyReport.objects.filter(id__in=ids):
@@ -784,21 +752,14 @@ def daily_unconfirm_selected(request):
     log.info("daily_unconfirm_selected > IP地址：" + repr(get_client_ip(request)))
     log.info("daily_unconfirm_selected > 取消发布 ( " + repr(ids) + " )")
 
-    return HttpResponseRedirect(
-        reverse('daily_manage_lab'))
+    return daily_manage_lab(request, init_global=False)
 
-
-@login_required
 def daily_save_pic(request):
     try:
-        _tmp = request.POST['pic'].split('@@@@@')
+        _tmp = request.POST['pic'].split('@@@@@') 
         drObjId = _tmp[0]
         contents = _tmp[1]
-        if drObjId != "new":
-            obj = models.DailyReport.objects.get(id=drObjId)
-        else:
-            obj = models.DailyReport.objects.all().order_by("id").last()
-
+        obj = models.DailyReport.objects.get(id=drObjId)
         obj.imgs = str(contents).encode()
         obj.save()
         return HttpResponse(True)
@@ -806,7 +767,7 @@ def daily_save_pic(request):
         return HttpResponse(repr(_tmp))
 
 
-@login_required
+
 def daily_all_confirm(request):
     x = datetime.datetime.now() if _r_start_date_ is None else datetime.datetime.strptime(_r_start_date_, '%m/%d/%Y')
     y = datetime.datetime.now() if _r_end_date_ is None else datetime.datetime.strptime(_r_end_date_, '%m/%d/%Y')
@@ -818,11 +779,8 @@ def daily_all_confirm(request):
     log.info("daily_all_confirm > IP地址：" + repr(get_client_ip(request)))
     log.info("daily_all_confirm > 发布 ( " + repr([x[0] for x in _data_.values_list('id')]) + " )")
 
-    return HttpResponseRedirect(
-        reverse('daily_manage_lab'))
+    return daily_manage_lab(request, init_global=False)
 
-
-@login_required
 def daily_all_unconfirm(request):
     x = datetime.datetime.now() if _r_start_date_ is None else datetime.datetime.strptime(_r_start_date_, '%m/%d/%Y')
     y = datetime.datetime.now() if _r_end_date_ is None else datetime.datetime.strptime(_r_end_date_, '%m/%d/%Y')
@@ -834,11 +792,8 @@ def daily_all_unconfirm(request):
     log.info("daily_all_unconfirm > IP地址：" + repr(get_client_ip(request)))
     log.info("daily_all_unconfirm > 取消发布 ( " + repr([x[0] for x in _data_.values_list('id')]) + " )")
 
-    return HttpResponseRedirect(
-        reverse('daily_manage_lab'))
+    return daily_manage_lab(request, init_global=False)
 
-
-@login_required
 def daily_all_delete(request):
     log.info("daily_all_delete > 用户（ " + request.user.username + ' )')
     log.info("daily_all_delete > IP地址：" + repr(get_client_ip(request)))
@@ -847,13 +802,12 @@ def daily_all_delete(request):
     delete_rows = models.DailyReport.objects.filter(date__range=(x, y))
     log.info("daily_all_delete > 删除全部 ( " + repr([x[0] for x in delete_rows.values_list('id')]) + " )")
     delete_rows.delete()
-    return HttpResponseRedirect(reverse('daily_manage_lab'))
+    # models.DailyReport.objects.filter(date__range=(x, y)).delete()
+    return daily_manage_lab(request, init_global=False)
 
 
-@login_required
 def data_init(request):
-    log.info("data_init > 用户（ " + request.user.username + ' )')
-    log.info("data_init > IP地址：" + repr(get_client_ip(request)))
+
     init_reason = True
     init_site = True
     init_warn = True
